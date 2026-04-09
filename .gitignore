@@ -1,0 +1,74 @@
+# Local tooling
+.codex/
+.vscode/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.swp
+*.swo
+
+# Secrets and local config
+auth.json
+.env
+.env.*
+
+# Python envs and archives
+venv/
+.venv/
+env/
+environment/
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
+# Weights and exported model artifacts
+*.pt
+*.pth
+*.pth.tar
+*.onnx
+*.torchscript
+*.engine
+*.faiss
+*.npy
+*.npz
+
+# Media and datasets
+dataset/
+20240320闪光活体归档/
+炫彩闪烁活体/
+Face-Anti-Spoofing-using-DeePixBiS/data/
+yolov7_face/data/
+yolov7_face/bank/
+*.avi
+*.mp4
+*.mov
+*.mkv
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.webp
+
+# Generated outputs
+flash_liveness_runs/
+Face-Anti-Spoofing-using-DeePixBiS/fusion_api_outputs/
+Face-Anti-Spoofing-using-DeePixBiS/fusion_eval_outputs_*/
+Face-Anti-Spoofing-using-DeePixBiS/inference_outputs_*/
+yolov7_face/runs/
+*.log
+
+# Archive module generated artifacts
+archive_20240320_flash_liveness/**/__pycache__/
+archive_20240320_flash_liveness/**/build/
+archive_20240320_flash_liveness/**/build_*/
+archive_20240320_flash_liveness/**/android_build/
+archive_20240320_flash_liveness/**/linux_build/
+archive_20240320_flash_liveness/**/cmake-build-debug/
+archive_20240320_flash_liveness/**/test_outputs_*/
+archive_20240320_flash_liveness/**/auto_test_outputs_*/
+archive_20240320_flash_liveness/**/infer_outputs_*/
+
+# Embedded git metadata backups
+**/.git.local-backup/
