@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="840" viewBox="0 0 1700 840">
+  <defs>
+    <style>
+      .title { font: 700 34px Arial, sans-serif; fill: #17324d; }
+      .subtitle { font: 600 20px Arial, sans-serif; fill: #34556f; }
+      .label { font: 600 18px Arial, sans-serif; fill: #17324d; }
+      .small { font: 500 15px Arial, sans-serif; fill: #35546f; }
+      .box { fill: #eef6ff; stroke: #2d6ea3; stroke-width: 2.2; rx: 16; ry: 16; }
+      .box2 { fill: #f5fbf3; stroke: #5a9c52; stroke-width: 2.2; rx: 16; ry: 16; }
+      .box3 { fill: #fff7ea; stroke: #d58a24; stroke-width: 2.2; rx: 16; ry: 16; }
+      .box4 { fill: #f7f1ff; stroke: #7d58c2; stroke-width: 2.2; rx: 16; ry: 16; }
+      .box5 { fill: #effcf8; stroke: #1f9d7a; stroke-width: 2.2; rx: 16; ry: 16; }
+      .arrow { stroke: #36566f; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#36566f"/>
+    </marker>
+  </defs>
+
+  <rect width="1700" height="840" fill="#ffffff"/>
+  <text x="850" y="54" text-anchor="middle" class="title">Flash Liveness V2 Architecture</text>
+  <text x="850" y="86" text-anchor="middle" class="subtitle">Visual-color fusion CNN + Transformer with full-frame sequential reading and TXT-guided color features</text>
+
+  <rect x="60" y="140" width="180" height="92" class="box"/>
+  <text x="150" y="178" text-anchor="middle" class="label">Input Video</text>
+  <text x="150" y="204" text-anchor="middle" class="small">full recorded sequence</text>
+
+  <rect x="60" y="270" width="180" height="92" class="box5"/>
+  <text x="150" y="308" text-anchor="middle" class="label">Input TXT</text>
+  <text x="150" y="334" text-anchor="middle" class="small">frame_idx,color_int</text>
+
+  <rect x="305" y="130" width="240" height="112" class="box2"/>
+  <text x="425" y="170" text-anchor="middle" class="label">Sequential Frame Read</text>
+  <text x="425" y="197" text-anchor="middle" class="small">Read all decodable frames</text>
+  <text x="425" y="220" text-anchor="middle" class="small">Preserve temporal order</text>
+
+  <rect x="305" y="260" width="240" height="112" class="box5"/>
+  <text x="425" y="300" text-anchor="middle" class="label">Parse Color TXT</text>
+  <text x="425" y="327" text-anchor="middle" class="small">Map frame id -&gt; packed color</text>
+  <text x="425" y="350" text-anchor="middle" class="small">Fallback to previous color</text>
+
+  <rect x="610" y="130" width="220" height="112" class="box2"/>
+  <text x="720" y="170" text-anchor="middle" class="label">Face Preprocess</text>
+  <text x="720" y="197" text-anchor="middle" class="small">YOLO align or</text>
+  <text x="720" y="220" text-anchor="middle" class="small">center crop + resize</text>
+
+  <rect x="610" y="260" width="220" height="112" class="box5"/>
+  <text x="720" y="298" text-anchor="middle" class="label">Color Feature Encode</text>
+  <text x="720" y="324" text-anchor="middle" class="small">[r, g, b, transition]</text>
+  <text x="720" y="348" text-anchor="middle" class="small">shape: [T, 4]</text>
+
+  <rect x="900" y="115" width="260" height="142" class="box3"/>
+  <text x="1030" y="154" text-anchor="middle" class="label">Visual Tensor Build</text>
+  <text x="1030" y="183" text-anchor="middle" class="small">RGB frames: [T, 224, 224, 3]</text>
+  <text x="1030" y="208" text-anchor="middle" class="small">Diff frames: [T, 224, 224, 3]</text>
+  <text x="1030" y="233" text-anchor="middle" class="small">Concat -&gt; [T, 224, 224, 6]</text>
+
+  <rect x="900" y="270" width="260" height="102" class="box5"/>
+  <text x="1030" y="308" text-anchor="middle" class="label">Batch + Padding</text>
+  <text x="1030" y="334" text-anchor="middle" class="small">Videos: [B, T, 6, 224, 224]</text>
+  <text x="1030" y="358" text-anchor="middle" class="small">Colors: [B, T, 4], Mask: [B, T]</text>
+
+  <rect x="1235" y="130" width="210" height="112" class="box"/>
+  <text x="1340" y="170" text-anchor="middle" class="label">ResNet18 Backbone</text>
+  <text x="1340" y="197" text-anchor="middle" class="small">Per-frame visual encoder</text>
+  <text x="1340" y="220" text-anchor="middle" class="small">[B, T, 512]</text>
+
+  <rect x="1235" y="260" width="210" height="112" class="box5"/>
+  <text x="1340" y="300" text-anchor="middle" class="label">Color Projection</text>
+  <text x="1340" y="327" text-anchor="middle" class="small">4 -&gt; 512 embedding</text>
+  <text x="1340" y="350" text-anchor="middle" class="small">[B, T, 512]</text>
+
+  <rect x="1510" y="182" width="140" height="138" class="box4"/>
+  <text x="1580" y="220" text-anchor="middle" class="label">Feature</text>
+  <text x="1580" y="246" text-anchor="middle" class="label">Fusion</text>
+  <text x="1580" y="274" text-anchor="middle" class="small">visual + color</text>
+  <text x="1580" y="298" text-anchor="middle" class="small">[B, T, 512]</text>
+
+  <path d="M240 186 L305 186" class="arrow"/>
+  <path d="M240 316 L305 316" class="arrow"/>
+  <path d="M545 186 L610 186" class="arrow"/>
+  <path d="M545 316 L610 316" class="arrow"/>
+  <path d="M830 186 L900 186" class="arrow"/>
+  <path d="M830 316 L900 316" class="arrow"/>
+  <path d="M1160 186 L1235 186" class="arrow"/>
+  <path d="M1160 316 L1235 316" class="arrow"/>
+  <path d="M1445 186 L1510 220" class="arrow"/>
+  <path d="M1445 316 L1510 282" class="arrow"/>
+
+  <rect x="100" y="455" width="1500" height="280" fill="#fbfdff" stroke="#c9d9e8" stroke-width="2" rx="24" ry="24"/>
+  <text x="850" y="498" text-anchor="middle" class="subtitle">Temporal Modeling and Classification</text>
+
+  <rect x="180" y="545" width="230" height="118" class="box4"/>
+  <text x="295" y="585" text-anchor="middle" class="label">Positional Encoding</text>
+  <text x="295" y="612" text-anchor="middle" class="small">Add frame order after</text>
+  <text x="295" y="636" text-anchor="middle" class="small">visual-color fusion</text>
+
+  <rect x="470" y="530" width="270" height="148" class="box4"/>
+  <text x="605" y="578" text-anchor="middle" class="label">Transformer Encoder</text>
+  <text x="605" y="606" text-anchor="middle" class="small">Consumes [B, T, 512]</text>
+  <text x="605" y="632" text-anchor="middle" class="small">Uses padding_mask</text>
+  <text x="605" y="658" text-anchor="middle" class="small">for variable-length sequences</text>
+
+  <rect x="810" y="545" width="250" height="118" class="box3"/>
+  <text x="935" y="585" text-anchor="middle" class="label">Masked Temporal Pooling</text>
+  <text x="935" y="612" text-anchor="middle" class="small">Pool only valid frames</text>
+  <text x="935" y="636" text-anchor="middle" class="small">[B, 512]</text>
+
+  <rect x="1130" y="545" width="180" height="118" class="box3"/>
+  <text x="1220" y="585" text-anchor="middle" class="label">FC Head</text>
+  <text x="1220" y="612" text-anchor="middle" class="small">512 -&gt; 128 -&gt; 1</text>
+  <text x="1220" y="636" text-anchor="middle" class="small">Sigmoid</text>
+
+  <rect x="1370" y="545" width="160" height="118" class="box2"/>
+  <text x="1450" y="585" text-anchor="middle" class="label">Final Output</text>
+  <text x="1450" y="612" text-anchor="middle" class="small">live / spoof</text>
+  <text x="1450" y="636" text-anchor="middle" class="small">score thresholding</text>
+
+  <path d="M410 604 L470 604" class="arrow"/>
+  <path d="M740 604 L810 604" class="arrow"/>
+  <path d="M1060 604 L1130 604" class="arrow"/>
+  <path d="M1310 604 L1370 604" class="arrow"/>
+
+  <rect x="600" y="765" width="500" height="44" class="box5"/>
+  <text x="850" y="793" text-anchor="middle" class="small">Key V2 idea: explicit color supervision from TXT is fused with visual-temporal features before Transformer reasoning.</text>
+</svg>

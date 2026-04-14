@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="760" viewBox="0 0 1600 760">
+  <defs>
+    <style>
+      .title { font: 700 34px Arial, sans-serif; fill: #17324d; }
+      .subtitle { font: 600 20px Arial, sans-serif; fill: #34556f; }
+      .label { font: 600 18px Arial, sans-serif; fill: #17324d; }
+      .small { font: 500 15px Arial, sans-serif; fill: #35546f; }
+      .box { fill: #eef6ff; stroke: #2d6ea3; stroke-width: 2.2; rx: 16; ry: 16; }
+      .box2 { fill: #f5fbf3; stroke: #5a9c52; stroke-width: 2.2; rx: 16; ry: 16; }
+      .box3 { fill: #fff7ea; stroke: #d58a24; stroke-width: 2.2; rx: 16; ry: 16; }
+      .box4 { fill: #f7f1ff; stroke: #7d58c2; stroke-width: 2.2; rx: 16; ry: 16; }
+      .arrow { stroke: #36566f; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .dashed { stroke-dasharray: 8 7; }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#36566f"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="760" fill="#ffffff"/>
+  <text x="800" y="56" text-anchor="middle" class="title">Flash Liveness V1 Architecture</text>
+  <text x="800" y="88" text-anchor="middle" class="subtitle">Visual-only CNN + Transformer with RGB and frame-difference fusion</text>
+
+  <rect x="60" y="150" width="180" height="92" class="box"/>
+  <text x="150" y="188" text-anchor="middle" class="label">Input Video</text>
+  <text x="150" y="214" text-anchor="middle" class="small">mp4 / avi / mov</text>
+
+  <rect x="290" y="135" width="220" height="120" class="box2"/>
+  <text x="400" y="174" text-anchor="middle" class="label">Frame Sampling</text>
+  <text x="400" y="201" text-anchor="middle" class="small">Long video: middle 16 frames</text>
+  <text x="400" y="224" text-anchor="middle" class="small">Short video: linspace expand</text>
+
+  <rect x="560" y="135" width="210" height="120" class="box2"/>
+  <text x="665" y="174" text-anchor="middle" class="label">Face Preprocess</text>
+  <text x="665" y="201" text-anchor="middle" class="small">YOLO align or</text>
+  <text x="665" y="224" text-anchor="middle" class="small">center crop + resize</text>
+
+  <rect x="820" y="120" width="260" height="150" class="box3"/>
+  <text x="950" y="160" text-anchor="middle" class="label">Per-frame Tensor Build</text>
+  <text x="950" y="190" text-anchor="middle" class="small">RGB frames: [16, 224, 224, 3]</text>
+  <text x="950" y="215" text-anchor="middle" class="small">Diff frames: [16, 224, 224, 3]</text>
+  <text x="950" y="240" text-anchor="middle" class="small">Concat -&gt; [16, 224, 224, 6]</text>
+
+  <rect x="1140" y="148" width="220" height="96" class="box3"/>
+  <text x="1250" y="184" text-anchor="middle" class="label">Permute / Stack</text>
+  <text x="1250" y="210" text-anchor="middle" class="small">[B, 16, 6, 224, 224]</text>
+
+  <rect x="1400" y="118" width="150" height="156" class="box4"/>
+  <text x="1475" y="165" text-anchor="middle" class="label">Tensor</text>
+  <text x="1475" y="195" text-anchor="middle" class="small">Time = 16</text>
+  <text x="1475" y="220" text-anchor="middle" class="small">Channels = 6</text>
+  <text x="1475" y="245" text-anchor="middle" class="small">224 x 224</text>
+
+  <path d="M240 196 L290 196" class="arrow"/>
+  <path d="M510 196 L560 196" class="arrow"/>
+  <path d="M770 196 L820 196" class="arrow"/>
+  <path d="M1080 196 L1140 196" class="arrow"/>
+  <path d="M1360 196 L1400 196" class="arrow"/>
+
+  <rect x="80" y="360" width="1440" height="280" fill="#fbfdff" stroke="#c9d9e8" stroke-width="2" rx="24" ry="24"/>
+  <text x="800" y="404" text-anchor="middle" class="subtitle">Model Forward Pipeline</text>
+
+  <rect x="120" y="445" width="210" height="120" class="box"/>
+  <text x="225" y="486" text-anchor="middle" class="label">ResNet18 Backbone</text>
+  <text x="225" y="513" text-anchor="middle" class="small">Shared frame encoder</text>
+  <text x="225" y="538" text-anchor="middle" class="small">Input: [B*16, 6, 224, 224]</text>
+
+  <rect x="390" y="445" width="220" height="120" class="box2"/>
+  <text x="500" y="486" text-anchor="middle" class="label">Frame Embeddings</text>
+  <text x="500" y="513" text-anchor="middle" class="small">Reshape back to</text>
+  <text x="500" y="538" text-anchor="middle" class="small">[B, 16, 512]</text>
+
+  <rect x="670" y="445" width="220" height="120" class="box2"/>
+  <text x="780" y="486" text-anchor="middle" class="label">Positional Encoding</text>
+  <text x="780" y="513" text-anchor="middle" class="small">Inject frame order</text>
+  <text x="780" y="538" text-anchor="middle" class="small">[B, 16, 512]</text>
+
+  <rect x="950" y="430" width="240" height="150" class="box4"/>
+  <text x="1070" y="478" text-anchor="middle" class="label">Transformer Encoder</text>
+  <text x="1070" y="506" text-anchor="middle" class="small">Temporal relation modeling</text>
+  <text x="1070" y="532" text-anchor="middle" class="small">16-frame sequence reasoning</text>
+  <text x="1070" y="558" text-anchor="middle" class="small">Output: [B, 16, 512]</text>
+
+  <rect x="1250" y="445" width="150" height="120" class="box3"/>
+  <text x="1325" y="486" text-anchor="middle" class="label">Mean Pool</text>
+  <text x="1325" y="513" text-anchor="middle" class="small">Time average</text>
+  <text x="1325" y="538" text-anchor="middle" class="small">[B, 512]</text>
+
+  <rect x="1440" y="445" width="120" height="120" class="box3"/>
+  <text x="1500" y="486" text-anchor="middle" class="label">FC Head</text>
+  <text x="1500" y="513" text-anchor="middle" class="small">512 -&gt; 128 -&gt; 1</text>
+  <text x="1500" y="538" text-anchor="middle" class="small">Sigmoid</text>
+
+  <path d="M330 505 L390 505" class="arrow"/>
+  <path d="M610 505 L670 505" class="arrow"/>
+  <path d="M890 505 L950 505" class="arrow"/>
+  <path d="M1190 505 L1250 505" class="arrow"/>
+  <path d="M1400 505 L1440 505" class="arrow"/>
+
+  <rect x="655" y="635" width="290" height="72" class="box2"/>
+  <text x="800" y="666" text-anchor="middle" class="label">Final Decision</text>
+  <text x="800" y="692" text-anchor="middle" class="small">probability_live &gt;= threshold -&gt; live, else spoof</text>
+</svg>
