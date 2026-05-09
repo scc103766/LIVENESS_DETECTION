@@ -1,0 +1,1 @@
+bash scripts/run_flash_liveness_v3_gpu012_training.sh

@@ -1,0 +1,118 @@
+<svg width="1500" height="720" viewBox="0 0 1500 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1500" height="720" fill="#F6F8FB"/>
+
+  <text x="60" y="70" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#17324D">
+    V2 6-Channel Tensor Flow
+  </text>
+  <text x="60" y="108" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#35516B">
+    Current RGB sequence and frame-difference sequence are concatenated on the channel axis, then permuted into PyTorch layout.
+  </text>
+
+  <rect x="60" y="150" width="400" height="470" rx="24" fill="#FFFFFF" stroke="#A9C3D9" stroke-width="2"/>
+  <text x="90" y="198" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#17324D">
+    1. Current RGB Frames
+  </text>
+  <text x="90" y="232" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#1E405F">
+    Shape: T × H × W × 3
+  </text>
+
+  <g transform="translate(120,270)">
+    <rect x="0" y="0" width="120" height="180" rx="14" fill="#FF6B6B" fill-opacity="0.85"/>
+    <text x="48" y="98" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="white">R</text>
+
+    <rect x="90" y="-18" width="120" height="180" rx="14" fill="#42C26B" fill-opacity="0.85"/>
+    <text x="150" y="80" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="white">G</text>
+
+    <rect x="180" y="-36" width="120" height="180" rx="14" fill="#4B8BFF" fill-opacity="0.9"/>
+    <text x="240" y="62" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="white">B</text>
+  </g>
+
+  <text x="90" y="500" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#45627C">
+    For each frame t, each pixel (h, w) stores:
+  </text>
+  <text x="90" y="532" font-family="Courier New, monospace" font-size="22" fill="#17324D">
+    [R(t,h,w), G(t,h,w), B(t,h,w)]
+  </text>
+
+  <rect x="550" y="150" width="400" height="470" rx="24" fill="#FFFFFF" stroke="#A9C3D9" stroke-width="2"/>
+  <text x="580" y="198" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#17324D">
+    2. Frame Difference
+  </text>
+  <text x="580" y="232" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#1E405F">
+    Shape: T × H × W × 3
+  </text>
+
+  <g transform="translate(610,270)">
+    <rect x="0" y="0" width="120" height="180" rx="14" fill="#FF9E7A" fill-opacity="0.9"/>
+    <text x="60" y="98" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="white">dR</text>
+
+    <rect x="90" y="-18" width="120" height="180" rx="14" fill="#93D36D" fill-opacity="0.9"/>
+    <text x="150" y="80" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="white">dG</text>
+
+    <rect x="180" y="-36" width="120" height="180" rx="14" fill="#69B8FF" fill-opacity="0.9"/>
+    <text x="240" y="62" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="white">dB</text>
+  </g>
+
+  <text x="580" y="500" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#45627C">
+    Difference is computed from adjacent frames:
+  </text>
+  <text x="580" y="532" font-family="Courier New, monospace" font-size="20" fill="#17324D">
+    diff[t] = frame[t] - frame[t-1]
+  </text>
+
+  <path d="M465 310 C505 310, 505 310, 535 310" stroke="#587A99" stroke-width="6" stroke-linecap="round"/>
+  <polygon points="535,310 518,300 518,320" fill="#587A99"/>
+
+  <path d="M955 310 C995 310, 995 310, 1025 310" stroke="#587A99" stroke-width="6" stroke-linecap="round"/>
+  <polygon points="1025,310 1008,300 1008,320" fill="#587A99"/>
+
+  <rect x="1010" y="240" width="420" height="380" rx="24" fill="#FFFFFF" stroke="#A9C3D9" stroke-width="2"/>
+  <text x="1040" y="288" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#17324D">
+    3. Concatenate on Channel Axis
+  </text>
+  <text x="1040" y="322" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#1E405F">
+    np.concatenate([frames, diff_frames], axis = -1)
+  </text>
+  <text x="1040" y="360" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#1E405F">
+    Shape: T × H × W × 6
+  </text>
+
+  <g transform="translate(1060,410)">
+    <rect x="0" y="0" width="54" height="126" rx="10" fill="#FF6B6B"/>
+    <rect x="50" y="0" width="54" height="126" rx="10" fill="#42C26B"/>
+    <rect x="100" y="0" width="54" height="126" rx="10" fill="#4B8BFF"/>
+    <rect x="170" y="0" width="54" height="126" rx="10" fill="#FF9E7A"/>
+    <rect x="220" y="0" width="54" height="126" rx="10" fill="#93D36D"/>
+    <rect x="270" y="0" width="54" height="126" rx="10" fill="#69B8FF"/>
+
+    <text x="27" y="72" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="white">R</text>
+    <text x="77" y="72" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="white">G</text>
+    <text x="127" y="72" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="white">B</text>
+    <text x="197" y="72" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="white">dR</text>
+    <text x="247" y="72" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="white">dG</text>
+    <text x="297" y="72" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="white">dB</text>
+  </g>
+
+  <text x="1040" y="575" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#45627C">
+    Same pixel position, richer feature vector:
+  </text>
+  <text x="1040" y="605" font-family="Courier New, monospace" font-size="20" fill="#17324D">
+    [R, G, B, dR, dG, dB]
+  </text>
+
+  <path d="M1220 145 C1220 120, 1220 120, 1220 95" stroke="#587A99" stroke-width="6" stroke-linecap="round"/>
+  <polygon points="1220,95 1210,112 1230,112" fill="#587A99"/>
+
+  <rect x="1030" y="20" width="380" height="92" rx="18" fill="#E9F3FF" stroke="#7FA9D1" stroke-width="2"/>
+  <text x="1060" y="58" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#17324D">
+    4. Permute to PyTorch Layout
+  </text>
+  <text x="1060" y="90" font-family="Courier New, monospace" font-size="20" fill="#17324D">
+    (T, H, W, 6)  →  (T, 6, H, W)
+  </text>
+
+  <rect x="60" y="645" width="1370" height="42" rx="14" fill="#EAF4EA" stroke="#8AB38E" stroke-width="1.5"/>
+  <text x="86" y="672" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#214C2A">
+    Training input after adding batch dimension: B × T × 6 × H × W. Concat happens on channels, not on time or width/height.
+  </text>
+</svg>

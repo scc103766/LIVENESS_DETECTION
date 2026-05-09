@@ -1,6 +1,7 @@
 # Local tooling
 .codex/
 .vscode/
+LivenessDetection.py
 __pycache__/
 **/__pycache__/
 *.pyc
@@ -53,11 +54,16 @@ yolov7_face/bank/
 
 # Generated outputs
 flash_liveness_runs/
+flash_liveness_v3_api_service/outputs/
+flash_liveness_v3_api_service/logs/
+thunderguard_facepreprocessor_service/outputs/
+thunderguard_facepreprocessor_service/logs/
 Face-Anti-Spoofing-using-DeePixBiS/fusion_api_outputs/
 Face-Anti-Spoofing-using-DeePixBiS/fusion_eval_outputs_*/
 Face-Anti-Spoofing-using-DeePixBiS/inference_outputs_*/
 yolov7_face/runs/
 *.log
+*.pid
 
 # Archive module generated artifacts
 archive_20240320_flash_liveness/**/__pycache__/

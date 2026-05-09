@@ -1,0 +1,196 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1900" height="1160" viewBox="0 0 1900 1160">
+  <defs>
+    <style>
+      .title { font: 700 34px Arial, Helvetica, sans-serif; fill: #17324d; }
+      .subtitle { font: 600 19px Arial, Helvetica, sans-serif; fill: #35516b; }
+      .section { font: 700 21px Arial, Helvetica, sans-serif; fill: #17324d; }
+      .label { font: 700 16px Arial, Helvetica, sans-serif; fill: #17324d; }
+      .small { font: 500 13px Arial, Helvetica, sans-serif; fill: #35516b; }
+      .mono { font: 600 13px "Courier New", monospace; fill: #17324d; }
+      .panel { fill: #ffffff; stroke: #c8d8e8; stroke-width: 2; rx: 22; ry: 22; }
+      .raw { fill: #eef6ff; stroke: #2d6ea3; stroke-width: 2; rx: 12; ry: 12; }
+      .data { fill: #effcf8; stroke: #1f9d7a; stroke-width: 2; rx: 12; ry: 12; }
+      .tensor { fill: #fff7ea; stroke: #d58a24; stroke-width: 2; rx: 12; ry: 12; }
+      .model { fill: #f7f1ff; stroke: #7d58c2; stroke-width: 2; rx: 12; ry: 12; }
+      .out { fill: #eef9ee; stroke: #3b9152; stroke-width: 2; rx: 12; ry: 12; }
+      .delta { fill: #fff1f3; stroke: #c94f6d; stroke-width: 2; rx: 12; ry: 12; }
+      .arrow { stroke: #36566f; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .arrow-soft { stroke: #7a8da0; stroke-width: 2.2; fill: none; marker-end: url(#arrowSoft); stroke-dasharray: 7 6; }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#36566f"/>
+    </marker>
+    <marker id="arrowSoft" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#7a8da0"/>
+    </marker>
+  </defs>
+
+  <rect width="1900" height="1160" fill="#f6f8fb"/>
+  <text x="950" y="54" text-anchor="middle" class="title">Flash Liveness V3 Input / Output Tensor Evolution</text>
+  <text x="950" y="86" text-anchor="middle" class="subtitle">From sample discovery to dataset tensors, padded batches, model outputs, and V3 changes over V2</text>
+
+  <rect x="45" y="125" width="340" height="695" class="panel"/>
+  <text x="215" y="163" text-anchor="middle" class="section">1. Raw Sample</text>
+
+  <rect x="78" y="205" width="274" height="92" class="raw"/>
+  <text x="215" y="238" text-anchor="middle" class="label">Sample Discovery</text>
+  <text x="215" y="263" text-anchor="middle" class="small">manifest.tsv or live/spoof folders</text>
+  <text x="215" y="284" text-anchor="middle" class="mono">label, category, source_group</text>
+
+  <rect x="78" y="337" width="274" height="92" class="raw"/>
+  <text x="215" y="370" text-anchor="middle" class="label">Media Input</text>
+  <text x="215" y="395" text-anchor="middle" class="small">video sequence or single image</text>
+  <text x="215" y="416" text-anchor="middle" class="mono">raw frames / image</text>
+
+  <rect x="78" y="469" width="274" height="92" class="data"/>
+  <text x="215" y="502" text-anchor="middle" class="label">Color Protocol</text>
+  <text x="215" y="527" text-anchor="middle" class="small">same-name txt preferred</text>
+  <text x="215" y="548" text-anchor="middle" class="small">fallback: collect_flash protocol</text>
+
+  <rect x="78" y="600" width="274" height="118" class="delta"/>
+  <text x="215" y="633" text-anchor="middle" class="label">V3 Metadata Added</text>
+  <text x="215" y="659" text-anchor="middle" class="small">category coverage for eval/test</text>
+  <text x="215" y="681" text-anchor="middle" class="small">source grouping</text>
+  <text x="215" y="703" text-anchor="middle" class="small">image sample support</text>
+
+  <rect x="430" y="125" width="390" height="695" class="panel"/>
+  <text x="625" y="163" text-anchor="middle" class="section">2. Dataset Processing</text>
+
+  <rect x="465" y="190" width="320" height="106" class="data"/>
+  <text x="625" y="223" text-anchor="middle" class="label">Frame Preprocess</text>
+  <text x="625" y="248" text-anchor="middle" class="small">face align or center crop, resize 224</text>
+  <text x="625" y="270" text-anchor="middle" class="mono">frames [T,224,224,3]</text>
+
+  <rect x="465" y="326" width="320" height="106" class="tensor"/>
+  <text x="625" y="359" text-anchor="middle" class="label">RGB + Diff Concatenation</text>
+  <text x="625" y="384" text-anchor="middle" class="mono">diff [T,224,224,3]</text>
+  <text x="625" y="407" text-anchor="middle" class="mono">video_tensor [T,6,224,224]</text>
+
+  <rect x="465" y="462" width="320" height="98" class="data"/>
+  <text x="625" y="495" text-anchor="middle" class="label">Color Encoding</text>
+  <text x="625" y="520" text-anchor="middle" class="small">packed color -&gt; r,g,b,transition</text>
+  <text x="625" y="542" text-anchor="middle" class="mono">color_tensor [T,4]</text>
+
+  <rect x="465" y="590" width="320" height="98" class="delta"/>
+  <text x="625" y="623" text-anchor="middle" class="label">Physical Cue Extractor</text>
+  <text x="625" y="648" text-anchor="middle" class="small">frequency 5 + flash 8 + rPPG 6</text>
+  <text x="625" y="670" text-anchor="middle" class="mono">physical_tensor [T,P]</text>
+
+  <rect x="465" y="718" width="320" height="70" class="delta"/>
+  <text x="625" y="746" text-anchor="middle" class="label">FFT Target</text>
+  <text x="625" y="771" text-anchor="middle" class="mono">fft_tensor [T,1,32,32]</text>
+
+  <rect x="865" y="125" width="355" height="695" class="panel"/>
+  <text x="1042" y="163" text-anchor="middle" class="section">3. Collate / Padding</text>
+
+  <rect x="900" y="210" width="285" height="408" class="tensor"/>
+  <text x="1042" y="246" text-anchor="middle" class="label">Variable T -&gt; max_len</text>
+  <text x="1042" y="284" text-anchor="middle" class="mono">videos</text>
+  <text x="1042" y="306" text-anchor="middle" class="mono">[B,max_len,6,224,224]</text>
+  <text x="1042" y="344" text-anchor="middle" class="mono">colors [B,max_len,4]</text>
+  <text x="1042" y="382" text-anchor="middle" class="mono">physical [B,max_len,P]</text>
+  <text x="1042" y="420" text-anchor="middle" class="mono">fft_targets</text>
+  <text x="1042" y="442" text-anchor="middle" class="mono">[B,max_len,1,32,32]</text>
+  <text x="1042" y="480" text-anchor="middle" class="mono">padding_mask [B,max_len]</text>
+  <text x="1042" y="518" text-anchor="middle" class="mono">labels [B]</text>
+  <text x="1042" y="570" text-anchor="middle" class="small">Transformer and auxiliary losses ignore padded frames</text>
+
+  <rect x="900" y="666" width="285" height="86" class="delta"/>
+  <text x="1042" y="699" text-anchor="middle" class="label">V3 Batch Carries More</text>
+  <text x="1042" y="724" text-anchor="middle" class="small">V2: videos + colors + mask + labels</text>
+  <text x="1042" y="745" text-anchor="middle" class="small">V3 adds physical + FFT targets</text>
+
+  <rect x="1265" y="125" width="300" height="695" class="panel"/>
+  <text x="1415" y="163" text-anchor="middle" class="section">4. Model Transform</text>
+
+  <rect x="1295" y="205" width="240" height="92" class="model"/>
+  <text x="1415" y="238" text-anchor="middle" class="label">Reshape Video</text>
+  <text x="1415" y="263" text-anchor="middle" class="mono">[B*T,6,224,224]</text>
+  <text x="1415" y="284" text-anchor="middle" class="small">shared by visual and CDC branches</text>
+
+  <rect x="1295" y="337" width="240" height="128" class="model"/>
+  <text x="1415" y="370" text-anchor="middle" class="label">Embeddings</text>
+  <text x="1415" y="395" text-anchor="middle" class="mono">frame_emb [B,T,E]</text>
+  <text x="1415" y="418" text-anchor="middle" class="mono">texture_emb [B,T,E]</text>
+  <text x="1415" y="441" text-anchor="middle" class="mono">color_emb [B,T,E]</text>
+  <text x="1415" y="459" text-anchor="middle" class="mono">physical_emb [B,T,E]</text>
+
+  <rect x="1295" y="505" width="240" height="102" class="model"/>
+  <text x="1415" y="538" text-anchor="middle" class="label">V3 Token Fusion</text>
+  <text x="1415" y="563" text-anchor="middle" class="mono">concat -&gt; [B,T,3E]</text>
+  <text x="1415" y="586" text-anchor="middle" class="mono">fused [B,T,E]</text>
+
+  <rect x="1295" y="647" width="240" height="84" class="model"/>
+  <text x="1415" y="680" text-anchor="middle" class="label">Transformer + Pooling</text>
+  <text x="1415" y="705" text-anchor="middle" class="mono">pooled [B,E]</text>
+
+  <rect x="1610" y="125" width="245" height="695" class="panel"/>
+  <text x="1732" y="163" text-anchor="middle" class="section">5. Outputs</text>
+
+  <rect x="1635" y="218" width="195" height="94" class="out"/>
+  <text x="1732" y="250" text-anchor="middle" class="label">Main Output</text>
+  <text x="1732" y="275" text-anchor="middle" class="mono">logits [B]</text>
+  <text x="1732" y="296" text-anchor="middle" class="small">probability_live</text>
+
+  <rect x="1635" y="352" width="195" height="102" class="delta"/>
+  <text x="1732" y="384" text-anchor="middle" class="label">Aux Output</text>
+  <text x="1732" y="409" text-anchor="middle" class="mono">depth_maps</text>
+  <text x="1732" y="431" text-anchor="middle" class="mono">[B,T,1,32,32]</text>
+
+  <rect x="1635" y="494" width="195" height="102" class="delta"/>
+  <text x="1732" y="526" text-anchor="middle" class="label">Aux Output</text>
+  <text x="1732" y="551" text-anchor="middle" class="mono">fft_maps</text>
+  <text x="1732" y="573" text-anchor="middle" class="mono">[B,T,1,32,32]</text>
+
+  <rect x="1635" y="636" width="195" height="92" class="out"/>
+  <text x="1732" y="668" text-anchor="middle" class="label">Inference Result</text>
+  <text x="1732" y="693" text-anchor="middle" class="small">threshold on probability</text>
+  <text x="1732" y="714" text-anchor="middle" class="mono">live / spoof</text>
+
+  <path d="M352 251 L465 243" class="arrow"/>
+  <path d="M352 383 L465 379" class="arrow"/>
+  <path d="M352 515 L465 511" class="arrow"/>
+  <path d="M785 379 L900 414" class="arrow"/>
+  <path d="M785 511 L900 414" class="arrow"/>
+  <path d="M785 639 L900 414" class="arrow"/>
+  <path d="M785 753 L900 414" class="arrow"/>
+  <path d="M1185 414 L1295 251" class="arrow"/>
+  <path d="M1535 251 L1635 265" class="arrow"/>
+  <path d="M1535 401 L1635 403" class="arrow"/>
+  <path d="M1535 556 L1635 545" class="arrow"/>
+  <path d="M1415 607 L1415 647" class="arrow"/>
+  <path d="M1535 689 L1635 682" class="arrow"/>
+
+  <rect x="45" y="870" width="1810" height="220" class="panel"/>
+  <text x="950" y="907" text-anchor="middle" class="section">What V3 Adds on Top of V2</text>
+
+  <rect x="95" y="955" width="250" height="76" class="delta"/>
+  <text x="220" y="983" text-anchor="middle" class="label">Data Organization</text>
+  <text x="220" y="1008" text-anchor="middle" class="small">manifest, category, source_group</text>
+
+  <rect x="385" y="955" width="250" height="76" class="delta"/>
+  <text x="510" y="983" text-anchor="middle" class="label">Input Signals</text>
+  <text x="510" y="1008" text-anchor="middle" class="small">physical tokens and image samples</text>
+
+  <rect x="675" y="955" width="250" height="76" class="delta"/>
+  <text x="800" y="983" text-anchor="middle" class="label">New Branch</text>
+  <text x="800" y="1008" text-anchor="middle" class="small">CDC texture branch</text>
+
+  <rect x="965" y="955" width="250" height="76" class="delta"/>
+  <text x="1090" y="983" text-anchor="middle" class="label">Auxiliary Supervision</text>
+  <text x="1090" y="1008" text-anchor="middle" class="small">pseudo-depth, contrast depth, FFT</text>
+
+  <rect x="1255" y="955" width="250" height="76" class="delta"/>
+  <text x="1380" y="983" text-anchor="middle" class="label">Model Outputs</text>
+  <text x="1380" y="1008" text-anchor="middle" class="small">logits + depth_maps + fft_maps</text>
+
+  <rect x="1545" y="955" width="250" height="76" class="delta"/>
+  <text x="1670" y="983" text-anchor="middle" class="label">Loss Function</text>
+  <text x="1670" y="1008" text-anchor="middle" class="small">BCE + depth + contrast + FFT</text>
+
+  <path d="M345 993 L385 993" class="arrow-soft"/>
+  <path d="M635 993 L675 993" class="arrow-soft"/>
+  <path d="M925 993 L965 993" class="arrow-soft"/>
+  <path d="M1215 993 L1255 993" class="arrow-soft"/>
+  <path d="M1505 993 L1545 993" class="arrow-soft"/>
+</svg>

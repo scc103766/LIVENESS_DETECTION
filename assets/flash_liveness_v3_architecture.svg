@@ -1,0 +1,177 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1900" height="1120" viewBox="0 0 1900 1120">
+  <defs>
+    <style>
+      .title { font: 700 34px Arial, Helvetica, sans-serif; fill: #17324d; }
+      .subtitle { font: 600 19px Arial, Helvetica, sans-serif; fill: #35516b; }
+      .section { font: 700 22px Arial, Helvetica, sans-serif; fill: #17324d; }
+      .label { font: 700 17px Arial, Helvetica, sans-serif; fill: #17324d; }
+      .small { font: 500 14px Arial, Helvetica, sans-serif; fill: #35516b; }
+      .mono { font: 600 14px "Courier New", monospace; fill: #17324d; }
+      .tiny { font: 500 12px Arial, Helvetica, sans-serif; fill: #4d667c; }
+      .panel { fill: #fbfdff; stroke: #c8d8e8; stroke-width: 2; rx: 22; ry: 22; }
+      .video { fill: #eef6ff; stroke: #2d6ea3; stroke-width: 2.2; rx: 14; ry: 14; }
+      .color { fill: #effcf8; stroke: #1f9d7a; stroke-width: 2.2; rx: 14; ry: 14; }
+      .physical { fill: #f5fbf3; stroke: #5a9c52; stroke-width: 2.2; rx: 14; ry: 14; }
+      .texture { fill: #fff7ea; stroke: #d58a24; stroke-width: 2.2; rx: 14; ry: 14; }
+      .fusion { fill: #f7f1ff; stroke: #7d58c2; stroke-width: 2.2; rx: 14; ry: 14; }
+      .loss { fill: #fff1f3; stroke: #c94f6d; stroke-width: 2.2; rx: 14; ry: 14; }
+      .output { fill: #eef9ee; stroke: #3b9152; stroke-width: 2.2; rx: 14; ry: 14; }
+      .note { fill: #ffffff; stroke: #bccbd8; stroke-width: 1.6; rx: 12; ry: 12; }
+      .arrow { stroke: #36566f; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .arrow-soft { stroke: #7a8da0; stroke-width: 2.3; fill: none; marker-end: url(#arrowSoft); stroke-dasharray: 7 6; }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#36566f"/>
+    </marker>
+    <marker id="arrowSoft" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#7a8da0"/>
+    </marker>
+  </defs>
+
+  <rect width="1900" height="1120" fill="#f6f8fb"/>
+  <text x="950" y="54" text-anchor="middle" class="title">Flash Liveness V3 Network Architecture</text>
+  <text x="950" y="86" text-anchor="middle" class="subtitle">RGB+Diff visual stream, color protocol stream, physical cue stream, CDC texture/depth branch, FFT auxiliary supervision, and Transformer temporal reasoning</text>
+
+  <rect x="45" y="120" width="330" height="545" class="panel"/>
+  <text x="210" y="157" text-anchor="middle" class="section">Inputs</text>
+
+  <rect x="75" y="188" width="270" height="86" class="video"/>
+  <text x="210" y="220" text-anchor="middle" class="label">Video Tensor</text>
+  <text x="210" y="246" text-anchor="middle" class="mono">[B, T, 6, 224, 224]</text>
+  <text x="210" y="266" text-anchor="middle" class="tiny">RGB 3ch + frame diff 3ch</text>
+
+  <rect x="75" y="302" width="270" height="80" class="color"/>
+  <text x="210" y="333" text-anchor="middle" class="label">Color Tensor</text>
+  <text x="210" y="358" text-anchor="middle" class="mono">[B, T, 4]</text>
+  <text x="210" y="376" text-anchor="middle" class="tiny">r, g, b, transition</text>
+
+  <rect x="75" y="410" width="270" height="80" class="physical"/>
+  <text x="210" y="441" text-anchor="middle" class="label">Physical Tensor</text>
+  <text x="210" y="466" text-anchor="middle" class="mono">[B, T, P]</text>
+  <text x="210" y="484" text-anchor="middle" class="tiny">frequency + flash response + rPPG</text>
+
+  <rect x="75" y="518" width="270" height="84" class="loss"/>
+  <text x="210" y="549" text-anchor="middle" class="label">Training Targets</text>
+  <text x="210" y="574" text-anchor="middle" class="mono">label [B]</text>
+  <text x="210" y="594" text-anchor="middle" class="mono">FFT [B,T,1,32,32]</text>
+
+  <rect x="410" y="120" width="360" height="545" class="panel"/>
+  <text x="590" y="157" text-anchor="middle" class="section">Per-frame Encoders</text>
+
+  <rect x="445" y="196" width="290" height="104" class="video"/>
+  <text x="590" y="229" text-anchor="middle" class="label">ResNet18 Visual Branch</text>
+  <text x="590" y="254" text-anchor="middle" class="tiny">first conv changed to 6 input channels</text>
+  <text x="590" y="278" text-anchor="middle" class="mono">frame_emb [B, T, E]</text>
+
+  <rect x="445" y="338" width="290" height="126" class="texture"/>
+  <text x="590" y="372" text-anchor="middle" class="label">CDC Texture Branch</text>
+  <text x="590" y="397" text-anchor="middle" class="tiny">Conv2dCD stack focuses local differences</text>
+  <text x="590" y="421" text-anchor="middle" class="mono">texture_emb [B, T, E]</text>
+  <text x="590" y="445" text-anchor="middle" class="mono">depth_maps [B,T,1,32,32]</text>
+
+  <rect x="445" y="510" width="290" height="82" class="loss"/>
+  <text x="590" y="542" text-anchor="middle" class="label">Pseudo-depth Head</text>
+  <text x="590" y="568" text-anchor="middle" class="tiny">weak live/spoof structural prior</text>
+
+  <rect x="810" y="120" width="330" height="545" class="panel"/>
+  <text x="975" y="157" text-anchor="middle" class="section">Condition Projections</text>
+
+  <rect x="845" y="236" width="260" height="94" class="color"/>
+  <text x="975" y="269" text-anchor="middle" class="label">Color Projection</text>
+  <text x="975" y="294" text-anchor="middle" class="tiny">Linear(4 -&gt; E) + LN + ReLU</text>
+  <text x="975" y="316" text-anchor="middle" class="mono">color_emb [B, T, E]</text>
+
+  <rect x="845" y="388" width="260" height="100" class="physical"/>
+  <text x="975" y="421" text-anchor="middle" class="label">Physical Projection</text>
+  <text x="975" y="446" text-anchor="middle" class="tiny">Linear(P -&gt; E) + LN + ReLU</text>
+  <text x="975" y="469" text-anchor="middle" class="mono">physical_emb [B, T, E]</text>
+
+  <rect x="1180" y="120" width="360" height="545" class="panel"/>
+  <text x="1360" y="157" text-anchor="middle" class="section">Token Fusion</text>
+
+  <rect x="1215" y="210" width="290" height="86" class="fusion"/>
+  <text x="1360" y="242" text-anchor="middle" class="label">Frame + Color</text>
+  <text x="1360" y="269" text-anchor="middle" class="mono">frame_emb + color_emb</text>
+
+  <rect x="1215" y="334" width="290" height="102" class="fusion"/>
+  <text x="1360" y="366" text-anchor="middle" class="label">Concat Tokens</text>
+  <text x="1360" y="392" text-anchor="middle" class="mono">[visual_color, texture, physical]</text>
+  <text x="1360" y="416" text-anchor="middle" class="mono">[B, T, 3E]</text>
+
+  <rect x="1215" y="474" width="290" height="88" class="fusion"/>
+  <text x="1360" y="507" text-anchor="middle" class="label">Fusion MLP</text>
+  <text x="1360" y="532" text-anchor="middle" class="mono">fused [B, T, E]</text>
+
+  <rect x="1580" y="120" width="275" height="545" class="panel"/>
+  <text x="1718" y="157" text-anchor="middle" class="section">Temporal Decision</text>
+
+  <rect x="1610" y="214" width="215" height="88" class="fusion"/>
+  <text x="1718" y="247" text-anchor="middle" class="label">Positional Encoding</text>
+  <text x="1718" y="273" text-anchor="middle" class="tiny">adds frame order</text>
+
+  <rect x="1610" y="342" width="215" height="104" class="fusion"/>
+  <text x="1718" y="375" text-anchor="middle" class="label">Transformer Encoder</text>
+  <text x="1718" y="401" text-anchor="middle" class="tiny">uses padding mask</text>
+  <text x="1718" y="424" text-anchor="middle" class="mono">[B, T, E]</text>
+
+  <rect x="1610" y="486" width="215" height="80" class="texture"/>
+  <text x="1718" y="518" text-anchor="middle" class="label">Masked Pooling</text>
+  <text x="1718" y="543" text-anchor="middle" class="mono">[B, E]</text>
+
+  <rect x="1610" y="598" width="215" height="82" class="output"/>
+  <text x="1718" y="630" text-anchor="middle" class="label">Classifier</text>
+  <text x="1718" y="655" text-anchor="middle" class="mono">logits [B]</text>
+
+  <path d="M345 231 L445 248" class="arrow"/>
+  <path d="M345 231 C382 275, 400 353, 445 397" class="arrow"/>
+  <path d="M345 342 L845 283" class="arrow"/>
+  <path d="M345 450 L845 438" class="arrow"/>
+  <path d="M735 248 L1215 253" class="arrow"/>
+  <path d="M1105 283 L1215 253" class="arrow"/>
+  <path d="M735 401 L1215 385" class="arrow"/>
+  <path d="M1105 438 L1215 385" class="arrow"/>
+  <path d="M1360 296 L1360 334" class="arrow"/>
+  <path d="M1360 436 L1360 474" class="arrow"/>
+  <path d="M1505 518 L1610 258" class="arrow"/>
+  <path d="M1718 302 L1718 342" class="arrow"/>
+  <path d="M1718 446 L1718 486" class="arrow"/>
+  <path d="M1718 566 L1718 598" class="arrow"/>
+
+  <rect x="45" y="710" width="1810" height="330" class="panel"/>
+  <text x="950" y="748" text-anchor="middle" class="section">Training Outputs and Losses</text>
+
+  <rect x="105" y="800" width="330" height="94" class="output"/>
+  <text x="270" y="833" text-anchor="middle" class="label">Final Classification Output</text>
+  <text x="270" y="858" text-anchor="middle" class="mono">prob_live = sigmoid(logits)</text>
+  <text x="270" y="880" text-anchor="middle" class="tiny">inference: threshold -&gt; live / spoof</text>
+
+  <rect x="500" y="790" width="300" height="112" class="loss"/>
+  <text x="650" y="823" text-anchor="middle" class="label">Classification Loss</text>
+  <text x="650" y="849" text-anchor="middle" class="mono">BCEWithLogits(logits, labels)</text>
+  <text x="650" y="875" text-anchor="middle" class="tiny">final live/spoof objective</text>
+
+  <rect x="860" y="790" width="310" height="112" class="loss"/>
+  <text x="1015" y="823" text-anchor="middle" class="label">Depth Losses</text>
+  <text x="1015" y="849" text-anchor="middle" class="mono">MSE(depth_maps, target)</text>
+  <text x="1015" y="873" text-anchor="middle" class="mono">+ contrast depth loss</text>
+
+  <rect x="1230" y="790" width="300" height="112" class="loss"/>
+  <text x="1380" y="823" text-anchor="middle" class="label">FFT Auxiliary Loss</text>
+  <text x="1380" y="849" text-anchor="middle" class="mono">MSE(fft_maps, fft_targets)</text>
+  <text x="1380" y="875" text-anchor="middle" class="tiny">training-only frequency constraint</text>
+
+  <rect x="1215" y="595" width="290" height="74" class="texture"/>
+  <text x="1360" y="623" text-anchor="middle" class="label">FFT Head</text>
+  <text x="1360" y="649" text-anchor="middle" class="mono">fft_maps [B,T,1,32,32]</text>
+
+  <path d="M735 401 C850 655, 1020 660, 1215 632" class="arrow-soft"/>
+  <path d="M590 464 C650 710, 870 770, 1015 790" class="arrow-soft"/>
+  <path d="M1360 669 C1360 715, 1372 752, 1380 790" class="arrow-soft"/>
+  <path d="M1718 680 C1710 740, 430 732, 650 790" class="arrow-soft"/>
+  <path d="M210 560 C365 745, 1130 743, 1380 790" class="arrow-soft"/>
+  <path d="M210 560 C355 730, 820 735, 1015 790" class="arrow-soft"/>
+
+  <rect x="555" y="940" width="790" height="58" class="note"/>
+  <text x="950" y="966" text-anchor="middle" class="label">total_loss = BCE + lambda_depth * depth_loss + lambda_contrast * contrast_depth_loss + lambda_fft * fft_loss</text>
+  <text x="950" y="990" text-anchor="middle" class="tiny">E = embed_dim, P = physical feature dimension. FFT target is used only during training.</text>
+</svg>

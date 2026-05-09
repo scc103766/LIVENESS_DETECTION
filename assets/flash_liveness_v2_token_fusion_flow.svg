@@ -1,0 +1,118 @@
+<svg width="1600" height="1020" viewBox="0 0 1600 1020" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1600" y2="1020" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F5F1E8"/>
+      <stop offset="1" stop-color="#ECE5D7"/>
+    </linearGradient>
+    <linearGradient id="cardA" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FFF9F0"/>
+      <stop offset="1" stop-color="#F6EBDD"/>
+    </linearGradient>
+    <linearGradient id="cardB" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#F2FBF7"/>
+      <stop offset="1" stop-color="#DBF0E7"/>
+    </linearGradient>
+    <linearGradient id="cardC" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#F6F3FF"/>
+      <stop offset="1" stop-color="#E4DCF8"/>
+    </linearGradient>
+    <linearGradient id="cardD" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FFF3F0"/>
+      <stop offset="1" stop-color="#F7DDD6"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#8D816E" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0 0L12 6L0 12V0Z" fill="#5E5548"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="1020" rx="28" fill="url(#bg)"/>
+  <text x="66" y="76" font-size="34" font-weight="700" fill="#1E1A16" font-family="Arial, 'Noto Sans SC', sans-serif">
+    Flash Liveness V2: 视频帧 token + 颜色 token 融合 + PE + Transformer
+  </text>
+  <text x="66" y="112" font-size="18" fill="#5E5548" font-family="Arial, 'Noto Sans SC', sans-serif">
+    对应 flash_liveness_project_v2.py 的当前实现：逐帧视频 + 同帧 txt 颜色对齐，再做 token 级融合与时序建模
+  </text>
+
+  <rect x="54" y="152" width="300" height="282" rx="22" fill="url(#cardA)" stroke="#CDBEA9" filter="url(#shadow)"/>
+  <text x="80" y="196" font-size="24" font-weight="700" fill="#1E1A16" font-family="Arial, 'Noto Sans SC', sans-serif">1. 输入与逐帧对齐</text>
+  <text x="80" y="238" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">视频逐帧顺序读取</text>
+  <text x="80" y="270" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">txt 按 frame_idx 取当前闪光颜色</text>
+  <text x="80" y="302" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">第 t 帧图像  ↔  第 t 帧颜色</text>
+  <text x="80" y="350" font-size="17" fill="#6A6154" font-family="Arial, 'Noto Sans SC', sans-serif">视频: T × H × W × 3</text>
+  <text x="80" y="378" font-size="17" fill="#6A6154" font-family="Arial, 'Noto Sans SC', sans-serif">颜色: T × 1 packed int</text>
+
+  <rect x="398" y="152" width="332" height="282" rx="22" fill="url(#cardB)" stroke="#B7D7C9" filter="url(#shadow)"/>
+  <text x="426" y="196" font-size="24" font-weight="700" fill="#1E1A16" font-family="Arial, 'Noto Sans SC', sans-serif">2. 两路逐帧特征构造</text>
+  <text x="426" y="240" font-size="18" fill="#1C4738" font-family="Arial, 'Noto Sans SC', sans-serif">视觉路:</text>
+  <text x="426" y="270" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">FacePreprocessor → RGB</text>
+  <text x="426" y="300" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">相邻帧差分 Diff = frame[t] - frame[t-1]</text>
+  <text x="426" y="330" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">concat 得到 [R,G,B,dR,dG,dB]</text>
+  <text x="426" y="372" font-size="18" fill="#1C4738" font-family="Arial, 'Noto Sans SC', sans-serif">颜色路:</text>
+  <text x="426" y="402" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">color_int_to_feature → [r,g,b,transition]</text>
+
+  <rect x="776" y="152" width="292" height="282" rx="22" fill="url(#cardC)" stroke="#C6BCE7" filter="url(#shadow)"/>
+  <text x="804" y="196" font-size="24" font-weight="700" fill="#1E1A16" font-family="Arial, 'Noto Sans SC', sans-serif">3. token 级融合</text>
+  <text x="804" y="240" font-size="18" fill="#473E6D" font-family="Arial, 'Noto Sans SC', sans-serif">CNN 分支</text>
+  <text x="804" y="270" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">T × 6 × H × W</text>
+  <text x="804" y="300" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">→ ResNet18 backbone</text>
+  <text x="804" y="330" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">→ visual token: T × D</text>
+  <text x="804" y="372" font-size="18" fill="#473E6D" font-family="Arial, 'Noto Sans SC', sans-serif">颜色分支</text>
+  <text x="804" y="402" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">T × 4 → Linear + LN + ReLU</text>
+  <text x="804" y="430" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">→ color token: T × D</text>
+
+  <rect x="1108" y="152" width="438" height="282" rx="22" fill="url(#cardD)" stroke="#E3BCAF" filter="url(#shadow)"/>
+  <text x="1136" y="196" font-size="24" font-weight="700" fill="#1E1A16" font-family="Arial, 'Noto Sans SC', sans-serif">4. Positional Encoding + Transformer Encoder</text>
+  <text x="1136" y="240" font-size="18" fill="#6B2E1D" font-family="Arial, 'Noto Sans SC', sans-serif">逐帧融合 token</text>
+  <text x="1136" y="270" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">visual token + color token</text>
+  <text x="1136" y="302" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">+ sinusoidal positional encoding</text>
+  <text x="1136" y="344" font-size="18" fill="#6B2E1D" font-family="Arial, 'Noto Sans SC', sans-serif">Transformer Encoder</text>
+  <text x="1136" y="374" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">建模切光前后、稳定阶段、长时依赖</text>
+  <text x="1136" y="406" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">src_key_padding_mask 忽略 padding 帧</text>
+
+  <line x1="354" y1="292" x2="396" y2="292" stroke="#5E5548" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="730" y1="292" x2="774" y2="292" stroke="#5E5548" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="1068" y1="292" x2="1106" y2="292" stroke="#5E5548" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <rect x="70" y="506" width="1460" height="428" rx="24" fill="#FFFDF8" stroke="#D5CABC" filter="url(#shadow)"/>
+  <text x="100" y="554" font-size="28" font-weight="700" fill="#1E1A16" font-family="Arial, 'Noto Sans SC', sans-serif">
+    张量形状与算法含义
+  </text>
+
+  <rect x="102" y="590" width="318" height="126" rx="18" fill="#F6EEE2" stroke="#D9C8B1"/>
+  <text x="126" y="628" font-size="22" font-weight="700" fill="#4D4031" font-family="Arial, 'Noto Sans SC', sans-serif">输入张量</text>
+  <text x="126" y="664" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">video: B × T × 6 × H × W</text>
+  <text x="126" y="694" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">color: B × T × 4</text>
+
+  <rect x="452" y="590" width="330" height="126" rx="18" fill="#EAF5EF" stroke="#BDD8C9"/>
+  <text x="476" y="628" font-size="22" font-weight="700" fill="#214A3B" font-family="Arial, 'Noto Sans SC', sans-serif">逐帧视觉 token</text>
+  <text x="476" y="664" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">每帧 6 通道 face crop</text>
+  <text x="476" y="694" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">CNN 输出: B × T × D</text>
+
+  <rect x="814" y="590" width="330" height="126" rx="18" fill="#F0ECFB" stroke="#CCC1E8"/>
+  <text x="838" y="628" font-size="22" font-weight="700" fill="#4B3F70" font-family="Arial, 'Noto Sans SC', sans-serif">逐帧颜色 token</text>
+  <text x="838" y="664" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">[r,g,b,transition]</text>
+  <text x="838" y="694" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">color_proj 输出: B × T × D</text>
+
+  <rect x="1176" y="590" width="322" height="126" rx="18" fill="#FFF0EC" stroke="#E8C4B9"/>
+  <text x="1200" y="628" font-size="22" font-weight="700" fill="#6B2E1D" font-family="Arial, 'Noto Sans SC', sans-serif">时序建模输出</text>
+  <text x="1200" y="664" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">Transformer: B × T × D</text>
+  <text x="1200" y="694" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">masked pooling → B × D</text>
+
+  <line x1="420" y1="653" x2="450" y2="653" stroke="#5E5548" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="782" y1="653" x2="812" y2="653" stroke="#5E5548" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="1144" y1="653" x2="1174" y2="653" stroke="#5E5548" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <text x="104" y="786" font-size="22" font-weight="700" fill="#1E1A16" font-family="Arial, 'Noto Sans SC', sans-serif">设计意图</text>
+  <text x="104" y="826" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">
+    • RGB 看当前外观，Diff 看相邻帧变化，颜色 token 显式描述“当前灯光条件”和“是否刚切光”
+  </text>
+  <text x="104" y="858" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">
+    • Positional Encoding 让 Transformer 知道帧的先后顺序，否则模型无法区分切光前后与稳定阶段
+  </text>
+  <text x="104" y="890" font-size="18" fill="#3A332B" font-family="Arial, 'Noto Sans SC', sans-serif">
+    • Transformer Encoder 学的是帧与帧之间的关系，而不是只看单帧亮不亮、颜色像不像
+  </text>
+</svg>
