@@ -30,7 +30,7 @@ from server_storage_manager import StorageRetentionConfig, StorageRetentionManag
 
 DEFAULT_CHECKPOINT_PATH = (
     PROJECT_ROOT
-    / "flash_liveness_runs/flash_liveness_v3_fixed_protocol_gpu012/best_flash_liveness_model.pth"
+    / "weights/flash_liveness_v3_fixed_protocol/best_flash_liveness_model.pth"
 )
 DEFAULT_OUTPUT_DIR = Path("/raid/scc/data/liveness_v3_server_result")
 

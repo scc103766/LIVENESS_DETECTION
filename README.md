@@ -1,8 +1,8 @@
 # LIVENESS_DETECTION
 
-人脸活体检测与炫彩闪光活体研究发布仓库。这个 GitHub release 以“代码、脚本、API 和文档”为主，排除原始数据、训练输出、模型权重、本地环境和服务上传结果。
+人脸活体检测与炫彩闪光活体研究发布仓库。这个 GitHub release 以“代码、脚本、API、文档和 V3 best 权重”为主，排除原始数据、训练输出、本地环境和服务上传结果。
 
-当前发布内容已同步到炫彩活体 V3/V3.1：包含 V3 主训练脚本、物理特征模块、固定协议推理脚本、V3 API 服务、网络结构图、输入输出 tensor 图和完整技术分析文档。
+当前发布内容已同步到炫彩活体 V3/V3.1：包含 V3 主训练脚本、物理特征模块、固定协议推理脚本、V3 API 服务、V3 best checkpoint 分片、网络结构图、输入输出 tensor 图和完整技术分析文档。
 
 ## 快速入口
 
@@ -13,6 +13,7 @@
 - 炫彩 V3 技术分析：[docs/flash_liveness/FLASH_LIVENESS_PROJECT_V3_TECHNICAL_ANALYSIS.md](docs/flash_liveness/FLASH_LIVENESS_PROJECT_V3_TECHNICAL_ANALYSIS.md)
 - 炫彩 V3.1 文档：[docs/flash_liveness/FLASH_LIVENESS_PROJECT_V3_1_README.md](docs/flash_liveness/FLASH_LIVENESS_PROJECT_V3_1_README.md)
 - 融合活体 API 手册：[docs/api/FUSED_FACE_LIVENESS_API_V2_README.md](docs/api/FUSED_FACE_LIVENESS_API_V2_README.md)
+- V3 best 权重：[weights/flash_liveness_v3_fixed_protocol/README.md](weights/flash_liveness_v3_fixed_protocol/README.md)
 
 ## 主要能力
 
@@ -49,6 +50,28 @@
 
 - `flash_liveness_v3_api_service/`
   - V3 FastAPI 服务代码和调用手册。
+
+## V3 Best 权重
+
+V3 fixed-protocol best checkpoint 已作为 Git 分片提交在：
+
+```text
+weights/flash_liveness_v3_fixed_protocol/
+```
+
+恢复原始 `.pth`：
+
+```bash
+bash weights/flash_liveness_v3_fixed_protocol/restore_best_weight.sh
+```
+
+恢复后路径：
+
+```text
+weights/flash_liveness_v3_fixed_protocol/best_flash_liveness_model.pth
+```
+
+V3 API 服务默认 checkpoint 路径已经指向该恢复文件。
 
 ## 推荐命令
 
@@ -94,6 +117,7 @@ LIVENESS_DETECTION/
 ├── docs/
 ├── commands/
 ├── assets/
+├── weights/
 ├── yolov7_face/
 ├── Face-Anti-Spoofing-using-DeePixBiS/
 └── archive_20240320_flash_liveness/
@@ -103,7 +127,7 @@ LIVENESS_DETECTION/
 
 - 原始数据集、采集视频、图片和派生数据集。
 - `flash_liveness_runs/` 训练与评测输出。
-- `.pt/.pth/.onnx/.engine/.faiss/.npy/.npz` 等模型和导出资产。
+- 除 V3 best checkpoint 分片之外的 `.pt/.pth/.onnx/.engine/.faiss/.npy/.npz` 等模型和导出资产。
 - API 服务上传结果、日志、缓存和本地环境。
 
 详见 [DATA_ASSETS.md](DATA_ASSETS.md)。

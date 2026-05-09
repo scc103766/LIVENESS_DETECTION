@@ -3,7 +3,7 @@
 ## Scope
 
 This repository is prepared for GitHub publication in a code-first form.
-Raw datasets, videos, environment exports, trained weights, large evaluation outputs, and local secrets are intentionally excluded from version control.
+Raw datasets, videos, environment exports, large evaluation outputs, and local secrets are intentionally excluded from version control. The V3 fixed-protocol best checkpoint is the only weight included in this release, stored as split parts under `weights/flash_liveness_v3_fixed_protocol/`.
 
 ## Excluded Asset Groups
 
@@ -20,7 +20,7 @@ Raw datasets, videos, environment exports, trained weights, large evaluation out
 
 ### Model Weights
 
-The following kinds of files are excluded:
+The following kinds of files are excluded by default:
 
 - `*.pt`
 - `*.pth`
@@ -30,6 +30,12 @@ The following kinds of files are excluded:
 - `*.npy`
 
 Examples in the local working directory include ArcFace, YOLOv7-face, ResNet18, and DeePixBiS checkpoints.
+
+Exception:
+
+- `weights/flash_liveness_v3_fixed_protocol/best_flash_liveness_model.pth.part-*`
+  - split Git-safe parts of the V3 fixed-protocol best checkpoint
+  - restore with `bash weights/flash_liveness_v3_fixed_protocol/restore_best_weight.sh`
 
 ### Generated Outputs
 

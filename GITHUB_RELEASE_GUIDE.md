@@ -30,6 +30,7 @@ and excludes:
 - `docs/`
 - `commands/`
 - `assets/`
+- `weights/flash_liveness_v3_fixed_protocol/` V3 best checkpoint split parts
 - `yolov7_face/` source code
 - `Face-Anti-Spoofing-using-DeePixBiS/` source code
 - repository documentation
@@ -40,7 +41,7 @@ and excludes:
 - `20240320闪光活体归档/`
 - `炫彩闪烁活体/`
 - `Face-Anti-Spoofing-using-DeePixBiS/data/`
-- model weight files
+- model weight files except the tracked V3 best checkpoint split parts
 - generated results and logs
 - `flash_liveness_v3_api_service/outputs/`
 - local upload files from API services

@@ -2,7 +2,13 @@
 
 本文档对应当前基准模型：
 
-`/supercloud/llm-code/scc/scc/Liveness_Detection/flash_liveness_runs/flash_liveness_v3_fixed_protocol_gpu012/best_flash_liveness_model.pth`
+`weights/flash_liveness_v3_fixed_protocol/best_flash_liveness_model.pth`
+
+GitHub release 中该权重以分片形式保存。首次 clone 后先恢复：
+
+```bash
+bash weights/flash_liveness_v3_fixed_protocol/restore_best_weight.sh
+```
 
 配套推理脚本：
 
@@ -61,8 +67,8 @@
 
 ```bash
 /home/scc/anaconda3/envs/anti-spoofing_scc_175/bin/python \
-  /supercloud/llm-code/scc/scc/Liveness_Detection/scripts/infer_flash_liveness_v3_video.py \
-  --checkpoint /supercloud/llm-code/scc/scc/Liveness_Detection/flash_liveness_runs/flash_liveness_v3_fixed_protocol_gpu012/best_flash_liveness_model.pth \
+  scripts/infer_flash_liveness_v3_video.py \
+  --checkpoint weights/flash_liveness_v3_fixed_protocol/best_flash_liveness_model.pth \
   --video-path /path/to/input.mp4 \
   --txt-path /path/to/input.txt \
   --output-dir /supercloud/llm-code/scc/scc/Liveness_Detection/flash_liveness_runs/v3_fixed_protocol_single_infer
@@ -95,8 +101,8 @@
 
 ```bash
 /home/scc/anaconda3/envs/anti-spoofing_scc_175/bin/python \
-  /supercloud/llm-code/scc/scc/Liveness_Detection/scripts/infer_flash_liveness_v3_video.py \
-  --checkpoint /supercloud/llm-code/scc/scc/Liveness_Detection/flash_liveness_runs/flash_liveness_v3_fixed_protocol_gpu012/best_flash_liveness_model.pth \
+  scripts/infer_flash_liveness_v3_video.py \
+  --checkpoint weights/flash_liveness_v3_fixed_protocol/best_flash_liveness_model.pth \
   --data-root /supercloud/llm-code/scc/scc/Liveness_Detection/dataset/flash_liveness_new_domain_video_protocol_v1v2 \
   --split all \
   --window-size 256 \

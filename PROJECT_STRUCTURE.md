@@ -2,7 +2,7 @@
 
 更新时间：2026-05-09
 
-本文记录当前 GitHub release 包的目录职责、主要功能和版本关系。发布包只保留代码、轻量脚本、文档和 SVG 图；数据集、视频、图片、权重、训练输出和本地服务输出不进入仓库。
+本文记录当前 GitHub release 包的目录职责、主要功能和版本关系。发布包保留代码、轻量脚本、文档、SVG 图和 V3 best checkpoint 分片；数据集、视频、图片、其他权重、训练输出和本地服务输出不进入仓库。
 
 ## 顶层结构
 
@@ -35,6 +35,7 @@ LIVENESS_DETECTION/
 ├── docs/
 ├── commands/
 ├── assets/
+├── weights/
 ├── yolov7_face/
 ├── Face-Anti-Spoofing-using-DeePixBiS/
 └── archive_20240320_flash_liveness/
@@ -56,6 +57,7 @@ LIVENESS_DETECTION/
 | --- | --- |
 | `assets/flash_liveness_v3_architecture.svg` | V3 网络结构图 |
 | `assets/flash_liveness_v3_io_tensor_flow.svg` | V3 输入输出 tensor 变化图 |
+| `weights/flash_liveness_v3_fixed_protocol/` | V3 fixed-protocol best checkpoint 分片和恢复脚本 |
 | `docs/flash_liveness/FLASH_LIVENESS_PROJECT_V3_README.md` | V3 项目说明、网络结构、输入输出和训练推理说明 |
 | `docs/flash_liveness/FLASH_LIVENESS_PROJECT_V3_TECHNICAL_ANALYSIS.md` | V3 完整处理链路、技术来源、设计理由、tensor 变化和论文/项目引用 |
 
@@ -116,5 +118,6 @@ docs/
 | --- | --- |
 | 数据集和媒体 | `dataset/`、`*.avi`、`*.mp4`、`*.jpg`、`*.png` |
 | 权重和导出模型 | `*.pt`、`*.pth`、`*.onnx`、`*.engine`、`*.faiss` |
+| 已纳入 release 的例外 | `weights/flash_liveness_v3_fixed_protocol/*.part-*` |
 | 训练和服务输出 | `flash_liveness_runs/`、`flash_liveness_v3_api_service/outputs/` |
 | 本地环境和缓存 | `.env*`、`__pycache__/`、`logs/`、conda/venv 目录 |

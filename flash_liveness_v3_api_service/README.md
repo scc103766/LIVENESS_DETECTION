@@ -3,7 +3,13 @@
 这个服务封装当前 V3 固定协议模型：
 
 ```text
-flash_liveness_runs/flash_liveness_v3_fixed_protocol_gpu012/best_flash_liveness_model.pth
+weights/flash_liveness_v3_fixed_protocol/best_flash_liveness_model.pth
+```
+
+如果刚 clone 本仓库，请先恢复权重：
+
+```bash
+bash weights/flash_liveness_v3_fixed_protocol/restore_best_weight.sh
 ```
 
 服务参考 `thunderguard_facepreprocessor_service/app_v1.py` 的结构，提供 FastAPI 入口、网页上传页、`/health` 和 `/predict`。
@@ -34,7 +40,7 @@ CUDA_VISIBLE_DEVICES=1 /home/scc/anaconda3/envs/anti-spoofing_scc_175/bin/python
 ${PROJECT_ROOT}/flash_liveness_v3_api_service/app.py \
 --host 0.0.0.0 \
 --port 18131 \
---checkpoint-path ${PROJECT_ROOT}/flash_liveness_runs/flash_liveness_v3_fixed_protocol_gpu012/best_flash_liveness_model.pth \
+--checkpoint-path ${PROJECT_ROOT}/weights/flash_liveness_v3_fixed_protocol/best_flash_liveness_model.pth \
 --output-dir /raid/scc/data/liveness_v3_server_result \
 --storage-max-videos 2000
 ```
