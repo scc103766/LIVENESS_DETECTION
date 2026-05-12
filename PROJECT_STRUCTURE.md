@@ -20,6 +20,7 @@ LIVENESS_DETECTION/
 ├── flash_liveness_api.py
 ├── flash_liveness_infer_utils.py
 ├── flash_physical_features.py
+├── flash_collect_stimulus_api_service/
 ├── flash_liveness_v3_api_service/
 ├── fused_face_liveness_api.py
 ├── fused_face_liveness_api_v2.py
@@ -66,6 +67,7 @@ LIVENESS_DETECTION/
 | 路径 | 功能 |
 | --- | --- |
 | `flash_liveness_v3_api_service/` | V3 checkpoint FastAPI 服务，支持视频/zip 上传、txt 颜色协议、窗口推理和存储保留策略 |
+| `flash_collect_stimulus_api_service/` | V3 fixed_collect_protocol 采集刺激服务，生成任意 `total_seconds` 的闪光 MP4/txt，并提供浏览器/手机摄像头录制上传页面 |
 | `flash_liveness_api.py` | 炫彩活体基础 API 入口 |
 | `fused_face_liveness_api.py` | 人脸库匹配 + 活体 fallback 的融合 API |
 | `fused_face_liveness_api_v2.py` | 融合 API V2，包含网页上传入口和 JSON 接口 |
@@ -119,5 +121,5 @@ docs/
 | 数据集和媒体 | `dataset/`、`*.avi`、`*.mp4`、`*.jpg`、`*.png` |
 | 权重和导出模型 | `*.pt`、`*.pth`、`*.onnx`、`*.engine`、`*.faiss` |
 | 已纳入 release 的例外 | `weights/flash_liveness_v3_fixed_protocol/*.part-*` |
-| 训练和服务输出 | `flash_liveness_runs/`、`flash_liveness_v3_api_service/outputs/` |
+| 训练和服务输出 | `flash_liveness_runs/`、`flash_liveness_v3_api_service/outputs/`、`flash_collect_stimulus_api_service/outputs/` |
 | 本地环境和缓存 | `.env*`、`__pycache__/`、`logs/`、conda/venv 目录 |

@@ -30,7 +30,7 @@ curl -X POST "http://127.0.0.1:18131/predict" \
   -F "file=@/path/to/input.mp4"
 ```
 
-没有同名 txt 时，服务会按 V3 固定 collect_flash 协议自动补齐颜色标签。
+没有同名 txt 时，服务会按上传视频的实际 `frame_count/fps` 自动补齐 V3 固定 `collect_flash` 颜色标签：`warmup=1.0s` 黑屏，三色按 `0.35s` 连续循环，`restore=0.0s`，尾部 `0.5s` 黑屏。视频可以是任意时长，协议不能变。
 
 ## 视频 + txt 上传
 

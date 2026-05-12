@@ -1,0 +1,4 @@
+CUDA_VISIBLE_DEVICES=1 /home/scc/anaconda3/envs/anti-spoofing_scc_175/bin/python \
+/supercloud/llm-code/scc/scc/Liveness_Detection/flash_collect_stimulus_api_service/app.py \
+--host 0.0.0.0 \
+--port 18132

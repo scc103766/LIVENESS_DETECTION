@@ -25,7 +25,6 @@ from torchvision import models
 from flash_physical_features import PhysicalCueExtractor, PhysicalFeatureConfig
 from scripts.collect_flash_liveness_video import (
     COLOR_SEQUENCE_RGB as COLLECT_FLASH_COLOR_SEQUENCE_RGB,
-    build_frame_color_labels,
 )
 
 if hasattr(cv2, "setLogLevel"):
@@ -38,7 +37,36 @@ if hasattr(cv2, "setLogLevel"):
 VIDEO_EXTENSIONS = {".mp4", ".avi", ".mov", ".mkv", ".webm", ".m4v"}
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 DEFAULT_UNKNOWN_COLOR = 0x808080
+DEFAULT_FLASH_WARMUP_COLOR = 0xFFFFFF
+DEFAULT_FLASH_TAIL_COLOR = 0x000000
+DEFAULT_FLASH_COLOR_SEQUENCE = tuple(
+    (int(r) << 16) | (int(g) << 8) | int(b)
+    for r, g, b in COLLECT_FLASH_COLOR_SEQUENCE_RGB
+)
 FLASH_COLOR_PROTOCOLS = {"neutral", "collect_flash"}
+DISPLAY_REPLAY_ATTACK_CATEGORIES = {
+    "flat_attack_flash_archive",
+    "replay_display_attack",
+    "replay_mobile_attack",
+}
+HIGH_FIDELITY_3D_MASK_ATTACK_CATEGORIES = {
+    "history_head_model_attack",
+    "latex_mask_attack",
+    "mask_attack",
+    "mask_fake_face_wig_hat_attack",
+    "public_3d_attack",
+    "silicone_mask_attack",
+    "textile_3d_mask_attack",
+    "three_d_head_model_attack_flash_archive",
+    "three_d_paper_mask_attack",
+}
+PAPER_EDGE_ATTACK_CATEGORIES = {
+    "advanced_paper_attack",
+    "cutout_attack",
+    "cylinder_paper_attack",
+    "on_actor_paper_attack",
+    "print_cut_paper_attack",
+}
 LABEL_NAME_TO_ID = {
     "live": 1,
     "real": 1,
@@ -161,6 +189,11 @@ def collect_samples_from_label_dirs(root_dir: Path) -> list[LivenessSample]:
             suffix = media_path.suffix.lower()
             if not media_path.is_file() or suffix not in VIDEO_EXTENSIONS | IMAGE_EXTENSIONS:
                 continue
+            try:
+                relative_parent = media_path.parent.relative_to(child)
+                category = relative_parent.parts[0] if relative_parent.parts else child.name
+            except ValueError:
+                category = child.name
             media_type = "videos" if suffix in VIDEO_EXTENSIONS else "images"
             samples.append(
                 LivenessSample(
@@ -168,7 +201,7 @@ def collect_samples_from_label_dirs(root_dir: Path) -> list[LivenessSample]:
                     txt_path=_find_optional_txt(media_path),
                     label=label,
                     media_type=media_type,
-                    category=child.name,
+                    category=category,
                     source_group="label_dir",
                 )
             )
@@ -406,6 +439,62 @@ def color_int_to_feature(color_value: int, prev_color_value: int | None) -> np.n
     b = (color_value & 0xFF) / 255.0
     transition = 0.0 if prev_color_value is None or prev_color_value == color_value else 1.0
     return np.asarray([r, g, b, transition], dtype=np.float32)
+
+
+def parse_packed_rgb_color(raw: str | int) -> int:
+    value = int(raw, 0) if isinstance(raw, str) else int(raw)
+    if value < 0 or value > 0xFFFFFF:
+        raise argparse.ArgumentTypeError(f"packed RGB color out of range: {raw}")
+    return value
+
+
+def parse_packed_rgb_sequence(raw: str) -> tuple[int, ...]:
+    values = tuple(parse_packed_rgb_color(item.strip()) for item in raw.split(",") if item.strip())
+    if not values:
+        raise argparse.ArgumentTypeError("flash color sequence must contain at least one packed RGB value")
+    return values
+
+
+def build_white_warmup_color_labels(
+    frame_count: int,
+    fps: float,
+    *,
+    warmup_seconds: float,
+    hold_seconds: float,
+    restore_seconds: float,
+    tail_seconds: float,
+    warmup_color: int,
+    flash_color_sequence: tuple[int, ...],
+    tail_color: int,
+) -> list[int]:
+    if frame_count <= 0:
+        return []
+    if fps <= 1e-6:
+        raise ValueError("fps must be > 0")
+    if hold_seconds <= 0:
+        raise ValueError("hold_seconds must be > 0")
+
+    duration_seconds = frame_count / fps
+    warmup_end = min(max(warmup_seconds, 0.0), duration_seconds)
+    tail_start = max(warmup_end, duration_seconds - max(tail_seconds, 0.0))
+    cycle_unit = hold_seconds + max(restore_seconds, 0.0)
+
+    labels: list[int] = []
+    for frame_index in range(frame_count):
+        elapsed = frame_index / fps
+        if elapsed < warmup_end:
+            labels.append(warmup_color)
+        elif elapsed >= tail_start or cycle_unit <= 1e-9:
+            labels.append(tail_color)
+        else:
+            local_time = elapsed - warmup_end
+            segment_index = int(local_time // cycle_unit)
+            segment_time = local_time - segment_index * cycle_unit
+            if segment_time < hold_seconds:
+                labels.append(flash_color_sequence[segment_index % len(flash_color_sequence)])
+            else:
+                labels.append(tail_color)
+    return labels
 
 
 class FlashLivenessDataset(Dataset):
@@ -952,6 +1041,29 @@ def print_category_coverage(coverage: dict) -> None:
         )
 
 
+def parse_category_list(raw: str) -> set[str]:
+    return {item.strip() for item in raw.split(",") if item.strip()}
+
+
+def resolve_minority_spoof_augment_categories(
+    train_samples: list[LivenessSample],
+    min_count: int,
+    explicit_categories: str,
+) -> set[str]:
+    explicit = parse_category_list(explicit_categories)
+    if explicit:
+        return explicit
+    if min_count <= 0:
+        return set()
+
+    spoof_counts: dict[str, int] = {}
+    for sample in train_samples:
+        if int(sample.label) != 0:
+            continue
+        spoof_counts[sample.category] = spoof_counts.get(sample.category, 0) + 1
+    return {category for category, count in spoof_counts.items() if count < min_count}
+
+
 def resolve_pos_weight(train_samples: list[LivenessSample], pos_weight_arg: str) -> float:
     if pos_weight_arg != "auto":
         return float(pos_weight_arg)
@@ -1160,6 +1272,20 @@ def train_model(args: argparse.Namespace) -> None:
         split_counts[split_name] = summarize_split_counts(splits.get(split_name, []))
     category_coverage = summarize_category_coverage(splits)
     print_category_coverage(category_coverage)
+    minority_spoof_augment_categories = resolve_minority_spoof_augment_categories(
+        splits["train"],
+        min_count=args.minority_spoof_augment_min_count,
+        explicit_categories=args.minority_spoof_augment_categories,
+    )
+    args.resolved_minority_spoof_augment_categories = sorted(minority_spoof_augment_categories)
+    if minority_spoof_augment_categories and args.minority_spoof_augment_prob > 0:
+        print(
+            "Minority spoof augmentation enabled for categories: "
+            f"{args.resolved_minority_spoof_augment_categories}, "
+            f"prob={args.minority_spoof_augment_prob:.3f}"
+        )
+    else:
+        print("Minority spoof augmentation disabled.")
 
     preprocessor = FacePreprocessor(
         detector_model_path=args.detector_model,
@@ -1188,7 +1314,13 @@ def train_model(args: argparse.Namespace) -> None:
         missing_color_protocol=args.missing_color_protocol,
         flash_warmup_seconds=args.flash_warmup_seconds,
         flash_hold_seconds=args.flash_hold_seconds,
+        flash_restore_seconds=args.flash_restore_seconds,
         flash_tail_seconds=args.flash_tail_seconds,
+        flash_warmup_color=args.flash_warmup_color,
+        flash_tail_color=args.flash_tail_color,
+        flash_color_sequence=args.flash_colors,
+        minority_spoof_augment_categories=minority_spoof_augment_categories,
+        minority_spoof_augment_prob=args.minority_spoof_augment_prob,
     )
     val_dataset = FlashLivenessDataset(
         splits["val"],
@@ -1202,7 +1334,11 @@ def train_model(args: argparse.Namespace) -> None:
         missing_color_protocol=args.missing_color_protocol,
         flash_warmup_seconds=args.flash_warmup_seconds,
         flash_hold_seconds=args.flash_hold_seconds,
+        flash_restore_seconds=args.flash_restore_seconds,
         flash_tail_seconds=args.flash_tail_seconds,
+        flash_warmup_color=args.flash_warmup_color,
+        flash_tail_color=args.flash_tail_color,
+        flash_color_sequence=args.flash_colors,
     )
     test_dataset = FlashLivenessDataset(
         splits["test"],
@@ -1216,7 +1352,11 @@ def train_model(args: argparse.Namespace) -> None:
         missing_color_protocol=args.missing_color_protocol,
         flash_warmup_seconds=args.flash_warmup_seconds,
         flash_hold_seconds=args.flash_hold_seconds,
+        flash_restore_seconds=args.flash_restore_seconds,
         flash_tail_seconds=args.flash_tail_seconds,
+        flash_warmup_color=args.flash_warmup_color,
+        flash_tail_color=args.flash_tail_color,
+        flash_color_sequence=args.flash_colors,
     )
 
     loader_common_kwargs = {
@@ -1510,6 +1650,71 @@ def _fft_target_from_frames(frames_rgb: np.ndarray, target_size: int = 32) -> np
     return np.stack(targets, axis=0).astype(np.float32)
 
 
+def _rebuild_video_modalities_from_rgb(rgb_frames: torch.Tensor) -> torch.Tensor:
+    diff_frames = torch.zeros_like(rgb_frames)
+    if rgb_frames.shape[0] > 1:
+        diff_frames[1:] = rgb_frames[1:] - rgb_frames[:-1]
+        diff_frames[0] = diff_frames[1]
+    return torch.cat([rgb_frames, diff_frames], dim=1)
+
+
+def _minority_spoof_policy(category: str) -> dict[str, tuple[float, float]]:
+    if category in DISPLAY_REPLAY_ATTACK_CATEGORIES:
+        return {
+            "brightness": (-0.025, 0.025),
+            "contrast": (0.96, 1.04),
+            "channel_gain": (0.97, 1.03),
+        }
+    if category in HIGH_FIDELITY_3D_MASK_ATTACK_CATEGORIES:
+        return {
+            "brightness": (-0.018, 0.018),
+            "contrast": (0.975, 1.025),
+            "channel_gain": (0.985, 1.015),
+        }
+    if category in PAPER_EDGE_ATTACK_CATEGORIES:
+        return {
+            "brightness": (-0.035, 0.035),
+            "contrast": (0.95, 1.05),
+            "channel_gain": (0.965, 1.035),
+        }
+    return {
+        "brightness": (-0.02, 0.02),
+        "contrast": (0.98, 1.02),
+        "channel_gain": (0.985, 1.015),
+    }
+
+
+def _sample_uniform(device: torch.device, bounds: tuple[float, float]) -> float:
+    low, high = bounds
+    return float(low + torch.rand(1, device=device).item() * (high - low))
+
+
+def _augment_rgb_video_tensor(rgb_frames: torch.Tensor, category: str) -> torch.Tensor:
+    """Apply category-safe global video-level photometric jitter.
+
+    The transform intentionally avoids blur, resize, spatial warp, per-frame color
+    jitter, and strong noise so attack-specific cues such as moire, print edges,
+    mask holes/specular response, rigid expression, and missing rPPG remain intact.
+    """
+    augmented = rgb_frames.clone()
+    device = augmented.device
+    policy = _minority_spoof_policy(category)
+    brightness = _sample_uniform(device, policy["brightness"])
+    contrast = _sample_uniform(device, policy["contrast"])
+    low_gain, high_gain = policy["channel_gain"]
+    gains = low_gain + torch.rand((1, 3, 1, 1), device=device) * (high_gain - low_gain)
+
+    mean = augmented.mean(dim=(0, 2, 3), keepdim=True)
+    augmented = (augmented - mean) * contrast + mean
+    augmented = augmented * gains + brightness
+    return torch.clamp(augmented, 0.0, 1.0)
+
+
+def _fft_target_from_rgb_tensor(rgb_frames: torch.Tensor, target_size: int) -> torch.Tensor:
+    frames_np = rgb_frames.detach().cpu().permute(0, 2, 3, 1).numpy()
+    return torch.from_numpy(_fft_target_from_frames(frames_np, target_size))
+
+
 class FlashLivenessDataset(Dataset):
     def __init__(
         self,
@@ -1525,7 +1730,13 @@ class FlashLivenessDataset(Dataset):
         missing_color_protocol: str = "collect_flash",
         flash_warmup_seconds: float = 1.0,
         flash_hold_seconds: float = 0.35,
+        flash_restore_seconds: float = 0.0,
         flash_tail_seconds: float = 0.5,
+        flash_warmup_color: int = DEFAULT_FLASH_WARMUP_COLOR,
+        flash_tail_color: int = DEFAULT_FLASH_TAIL_COLOR,
+        flash_color_sequence: tuple[int, ...] = DEFAULT_FLASH_COLOR_SEQUENCE,
+        minority_spoof_augment_categories: set[str] | None = None,
+        minority_spoof_augment_prob: float = 0.0,
     ) -> None:
         self.samples = samples
         self.transform = transform
@@ -1541,7 +1752,15 @@ class FlashLivenessDataset(Dataset):
         self.missing_color_protocol = missing_color_protocol
         self.flash_warmup_seconds = float(flash_warmup_seconds)
         self.flash_hold_seconds = float(flash_hold_seconds)
+        self.flash_restore_seconds = float(flash_restore_seconds)
         self.flash_tail_seconds = float(flash_tail_seconds)
+        self.flash_warmup_color = parse_packed_rgb_color(flash_warmup_color)
+        self.flash_tail_color = parse_packed_rgb_color(flash_tail_color)
+        self.flash_color_sequence = tuple(parse_packed_rgb_color(value) for value in flash_color_sequence)
+        if not self.flash_color_sequence:
+            raise ValueError("flash_color_sequence must contain at least one packed RGB value")
+        self.minority_spoof_augment_categories = set(minority_spoof_augment_categories or set())
+        self.minority_spoof_augment_prob = max(0.0, min(float(minority_spoof_augment_prob), 1.0))
         self.physical_extractor = PhysicalCueExtractor(
             PhysicalFeatureConfig(
                 use_frequency=use_physical_features,
@@ -1565,13 +1784,16 @@ class FlashLivenessDataset(Dataset):
             return {}
         if fps <= 1e-6 or math.isnan(fps):
             fps = 30.0
-        labels = build_frame_color_labels(
+        labels = build_white_warmup_color_labels(
             frame_count=frame_count,
             fps=fps,
             warmup_seconds=self.flash_warmup_seconds,
             hold_seconds=self.flash_hold_seconds,
+            restore_seconds=self.flash_restore_seconds,
             tail_seconds=self.flash_tail_seconds,
-            color_sequence=COLLECT_FLASH_COLOR_SEQUENCE_RGB,
+            warmup_color=self.flash_warmup_color,
+            flash_color_sequence=self.flash_color_sequence,
+            tail_color=self.flash_tail_color,
         )
         return {idx: color for idx, color in enumerate(labels)}
 
@@ -1708,6 +1930,17 @@ class FlashLivenessDataset(Dataset):
         if self.transform and torch.rand(1).item() > 0.5:
             tensor_frames = torch.flip(tensor_frames, dims=[3])
             tensor_fft = torch.flip(tensor_fft, dims=[3])
+
+        should_augment_minority_spoof = (
+            self.transform
+            and int(sample.label) == 0
+            and sample.category in self.minority_spoof_augment_categories
+            and torch.rand(1).item() < self.minority_spoof_augment_prob
+        )
+        if should_augment_minority_spoof:
+            rgb_frames = _augment_rgb_video_tensor(tensor_frames[:, :3], sample.category)
+            tensor_frames = _rebuild_video_modalities_from_rgb(rgb_frames)
+            tensor_fft = _fft_target_from_rgb_tensor(rgb_frames, self.fft_target_size)
 
         return tensor_frames, tensor_colors, tensor_physical, tensor_fft, torch.tensor(sample.label, dtype=torch.float32)
 
@@ -2177,7 +2410,11 @@ def save_checkpoint(
             "missing_color_protocol": getattr(args, "missing_color_protocol", "collect_flash"),
             "flash_warmup_seconds": getattr(args, "flash_warmup_seconds", 1.0),
             "flash_hold_seconds": getattr(args, "flash_hold_seconds", 0.35),
+            "flash_restore_seconds": getattr(args, "flash_restore_seconds", 0.0),
             "flash_tail_seconds": getattr(args, "flash_tail_seconds", 0.5),
+            "flash_warmup_color": getattr(args, "flash_warmup_color", DEFAULT_FLASH_WARMUP_COLOR),
+            "flash_tail_color": getattr(args, "flash_tail_color", DEFAULT_FLASH_TAIL_COLOR),
+            "flash_colors": list(getattr(args, "flash_colors", DEFAULT_FLASH_COLOR_SEQUENCE)),
         },
         "resolved_pos_weight": pos_weight_value,
         "best_val_auc": best_val_auc,
@@ -2242,7 +2479,11 @@ def predict_video(args: argparse.Namespace) -> None:
         missing_color_protocol=config.get("missing_color_protocol", "collect_flash"),
         flash_warmup_seconds=config.get("flash_warmup_seconds", 1.0),
         flash_hold_seconds=config.get("flash_hold_seconds", 0.35),
+        flash_restore_seconds=config.get("flash_restore_seconds", 0.0),
         flash_tail_seconds=config.get("flash_tail_seconds", 0.5),
+        flash_warmup_color=config.get("flash_warmup_color", DEFAULT_FLASH_WARMUP_COLOR),
+        flash_tail_color=config.get("flash_tail_color", DEFAULT_FLASH_TAIL_COLOR),
+        flash_color_sequence=tuple(config.get("flash_colors", DEFAULT_FLASH_COLOR_SEQUENCE)),
     )
     frames_tensor, color_tensor, physical_tensor, _ = dataset.process_video(args.video_path, txt_path)
     if frames_tensor.numel() == 0:
@@ -2295,9 +2536,18 @@ def build_parser() -> argparse.ArgumentParser:
         default="collect_flash",
         help="视频缺少同名 txt 时的颜色协议。collect_flash 会复用 collect_flash_liveness_video.py 的三色炫光时序。",
     )
-    train_parser.add_argument("--flash-warmup-seconds", type=float, default=1.0, help="生成 collect_flash 缺省颜色标签时的黑屏预热秒数。")
+    train_parser.add_argument("--flash-warmup-seconds", type=float, default=1.0, help="生成 collect_flash 缺省颜色标签时的白场预热秒数。")
     train_parser.add_argument("--flash-hold-seconds", type=float, default=0.35, help="生成 collect_flash 缺省颜色标签时每种颜色保持秒数。")
+    train_parser.add_argument("--flash-restore-seconds", type=float, default=0.0, help="生成 collect_flash 缺省颜色标签时每种颜色后的黑屏恢复秒数。V3 fixed_collect_protocol 默认为 0。")
     train_parser.add_argument("--flash-tail-seconds", type=float, default=0.5, help="生成 collect_flash 缺省颜色标签时的黑屏收尾秒数。")
+    train_parser.add_argument("--flash-warmup-color", type=parse_packed_rgb_color, default=DEFAULT_FLASH_WARMUP_COLOR, help="生成 collect_flash 缺省颜色标签时的 packed RGB 预热颜色。")
+    train_parser.add_argument("--flash-tail-color", type=parse_packed_rgb_color, default=DEFAULT_FLASH_TAIL_COLOR, help="生成 collect_flash 缺省颜色标签时的 packed RGB 收尾/恢复颜色。")
+    train_parser.add_argument(
+        "--flash-colors",
+        type=parse_packed_rgb_sequence,
+        default=DEFAULT_FLASH_COLOR_SEQUENCE,
+        help="逗号分隔的 packed RGB 闪光序列，默认与 white-warmup 数据集一致。",
+    )
     train_parser.add_argument("--output-dir", default="./flash_liveness_runs", help="训练输出目录")
     train_parser.add_argument("--epochs", type=int, default=20)
     train_parser.add_argument("--batch-size", type=int, default=2)
@@ -2319,6 +2569,26 @@ def build_parser() -> argparse.ArgumentParser:
     train_parser.add_argument("--lambda-fft", type=float, default=0.05, help="FFT map 辅助损失权重。")
     train_parser.add_argument("--learning-rate", type=float, default=1e-4)
     train_parser.add_argument("--weight-decay", type=float, default=1e-2)
+    train_parser.add_argument(
+        "--minority-spoof-augment-min-count",
+        type=int,
+        default=0,
+        help="对 train split 中样本数少于该值的 spoof category 启用额外随机增强；0 表示关闭自动选择。",
+    )
+    train_parser.add_argument(
+        "--minority-spoof-augment-categories",
+        default="",
+        help="逗号分隔的 spoof category 白名单。设置后优先使用该列表，而不是 min-count 自动选择。",
+    )
+    train_parser.add_argument(
+        "--minority-spoof-augment-prob",
+        type=float,
+        default=0.0,
+        help=(
+            "少样本 spoof category 每次取样时应用类别安全增强的概率。"
+            "增强仅做全视频一致的轻量曝光/白平衡微扰，不做模糊、重采样、空间形变或逐帧颜色抖动。"
+        ),
+    )
     train_parser.add_argument("--log-interval", type=int, default=20, help="每隔多少个 batch 打印一次训练进度。")
     train_parser.add_argument("--log-seconds", type=float, default=60.0, help="每隔多少秒打印一次 batch 训练进度，0 表示关闭按时间打印。")
     train_parser.add_argument(

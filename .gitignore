@@ -54,6 +54,8 @@ yolov7_face/bank/
 
 # Generated outputs
 flash_liveness_runs/
+flash_collect_stimulus_api_service/outputs/
+flash_collect_stimulus_api_service/logs/
 flash_liveness_v3_api_service/outputs/
 flash_liveness_v3_api_service/logs/
 thunderguard_facepreprocessor_service/outputs/

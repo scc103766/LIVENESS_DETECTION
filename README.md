@@ -12,6 +12,7 @@
 - 炫彩 V3 文档：[docs/flash_liveness/FLASH_LIVENESS_PROJECT_V3_README.md](docs/flash_liveness/FLASH_LIVENESS_PROJECT_V3_README.md)
 - 炫彩 V3 技术分析：[docs/flash_liveness/FLASH_LIVENESS_PROJECT_V3_TECHNICAL_ANALYSIS.md](docs/flash_liveness/FLASH_LIVENESS_PROJECT_V3_TECHNICAL_ANALYSIS.md)
 - 炫彩 V3.1 文档：[docs/flash_liveness/FLASH_LIVENESS_PROJECT_V3_1_README.md](docs/flash_liveness/FLASH_LIVENESS_PROJECT_V3_1_README.md)
+- 炫彩采集刺激 API：[flash_collect_stimulus_api_service/README.md](flash_collect_stimulus_api_service/README.md)
 - 融合活体 API 手册：[docs/api/FUSED_FACE_LIVENESS_API_V2_README.md](docs/api/FUSED_FACE_LIVENESS_API_V2_README.md)
 - V3 best 权重：[weights/flash_liveness_v3_fixed_protocol/README.md](weights/flash_liveness_v3_fixed_protocol/README.md)
 
@@ -23,6 +24,7 @@
 - 炫彩闪光活体 V1/V2/V3/V3.1 训练、评测和推理脚本。
 - V3 固定协议模型：RGB+Diff、颜色 token、物理特征 token、CDC texture branch、pseudo-depth、FFT auxiliary loss 和 Transformer 时序建模。
 - V3 FastAPI 服务：视频/zip 上传、可选 txt 颜色协议、窗口推理、结果落盘和存储保留策略。
+- V3 采集刺激 API：服务端生成任意总时长的 fixed_collect_protocol 闪光 MP4/txt，浏览器或手机页面录制现场视频。
 - 代码版历史归档 `archive_20240320_flash_liveness/`。
 
 ## V3 核心文件
@@ -50,6 +52,10 @@
 
 - `flash_liveness_v3_api_service/`
   - V3 FastAPI 服务代码和调用手册。
+
+- `flash_collect_stimulus_api_service/`
+  - V3 fixed_collect_protocol 采集刺激服务。
+  - 默认协议为 `warmup=1.0s`、三色 `hold=0.35s` 连续循环、`restore=0.0s`、`tail=0.5s`；`total_seconds` 由调用方指定，默认推荐值不是固定限制。
 
 ## V3 Best 权重
 
@@ -104,6 +110,7 @@ LIVENESS_DETECTION/
 ├── flash_liveness_project_v3.py
 ├── flash_liveness_project_v3_1.py
 ├── flash_physical_features.py
+├── flash_collect_stimulus_api_service/
 ├── flash_liveness_v3_api_service/
 ├── fused_face_liveness_api.py
 ├── fused_face_liveness_api_v2.py
@@ -128,6 +135,6 @@ LIVENESS_DETECTION/
 - 原始数据集、采集视频、图片和派生数据集。
 - `flash_liveness_runs/` 训练与评测输出。
 - 除 V3 best checkpoint 分片之外的 `.pt/.pth/.onnx/.engine/.faiss/.npy/.npz` 等模型和导出资产。
-- API 服务上传结果、日志、缓存和本地环境。
+- API 服务上传结果、采集刺激服务 outputs/logs、日志、缓存和本地环境。
 
 详见 [DATA_ASSETS.md](DATA_ASSETS.md)。

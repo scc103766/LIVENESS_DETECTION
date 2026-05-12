@@ -167,6 +167,14 @@ def create_app(args: argparse.Namespace) -> FastAPI:
             "window_stride": service.window_stride,
             "window_fusion": service.window_fusion,
             "require_color_txt": service.require_color_txt,
+            "flash_protocol": {
+                "missing_color_protocol": service.config.get("missing_color_protocol", "collect_flash"),
+                "warmup_seconds": service.config.get("flash_warmup_seconds", 1.0),
+                "hold_seconds": service.config.get("flash_hold_seconds", 0.35),
+                "restore_seconds": service.config.get("flash_restore_seconds", 0.0),
+                "tail_seconds": service.config.get("flash_tail_seconds", 0.5),
+                "color_order_packed": [16717055, 1376020, 16716820],
+            },
             "output_dir": str(Path(args.output_dir).resolve()),
             "storage_backup_dir": str(Path(args.storage_backup_dir).resolve())
             if args.storage_backup_dir

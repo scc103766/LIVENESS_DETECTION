@@ -21,6 +21,9 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from flash_liveness_project_v3 import (  # noqa: E402
     CNNTransformerLiveness,
+    DEFAULT_FLASH_COLOR_SEQUENCE,
+    DEFAULT_FLASH_TAIL_COLOR,
+    DEFAULT_FLASH_WARMUP_COLOR,
     FacePreprocessor,
     FlashLivenessDataset,
     load_checkpoint_state_dict,
@@ -273,7 +276,11 @@ class FlashLivenessV3ApiService:
             missing_color_protocol=self.config.get("missing_color_protocol", "collect_flash"),
             flash_warmup_seconds=self.config.get("flash_warmup_seconds", 1.0),
             flash_hold_seconds=self.config.get("flash_hold_seconds", 0.35),
+            flash_restore_seconds=self.config.get("flash_restore_seconds", 0.0),
             flash_tail_seconds=self.config.get("flash_tail_seconds", 0.5),
+            flash_warmup_color=self.config.get("flash_warmup_color", DEFAULT_FLASH_WARMUP_COLOR),
+            flash_tail_color=self.config.get("flash_tail_color", DEFAULT_FLASH_TAIL_COLOR),
+            flash_color_sequence=tuple(self.config.get("flash_colors", DEFAULT_FLASH_COLOR_SEQUENCE)),
         )
 
     def _request_dir(self, request_id: str) -> Path:
@@ -428,9 +435,12 @@ class FlashLivenessV3ApiService:
                 "missing_color_protocol": self.config.get("missing_color_protocol", "collect_flash"),
                 "warmup_seconds": self.config.get("flash_warmup_seconds", 1.0),
                 "hold_seconds": self.config.get("flash_hold_seconds", 0.35),
+                "restore_seconds": self.config.get("flash_restore_seconds", 0.0),
                 "tail_seconds": self.config.get("flash_tail_seconds", 0.5),
+                "warmup_color": self.config.get("flash_warmup_color", DEFAULT_FLASH_WARMUP_COLOR),
+                "tail_color": self.config.get("flash_tail_color", DEFAULT_FLASH_TAIL_COLOR),
                 "color_order_rgb": [[255, 20, 255], [20, 255, 20], [255, 20, 20]],
-                "color_order_packed": [16717055, 1376020, 16716820],
+                "color_order_packed": list(self.config.get("flash_colors", DEFAULT_FLASH_COLOR_SEQUENCE)),
             },
             "latency_ms": round((time.perf_counter() - started) * 1000.0, 2),
             **source_details,
