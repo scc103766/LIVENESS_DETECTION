@@ -28,7 +28,7 @@ warmup 1.0s black
 -> tail 0.5s black
 ```
 
-`restore_seconds` 默认是 `0.0`，对应训练集里的连续切色。`total_seconds` 是调用方指定的录制总时长，默认值 `3.0` 只是推荐值，不是协议限制；服务会按传入的视频总时长连续循环三色直到最后 `0.5s` 黑屏。
+`restore_seconds` 默认是 `0.0`，对应训练集里的连续切色。`total_seconds` 是调用方指定的录制总时长，默认值 `4.0` 只是推荐值，不是协议限制；服务会按传入的视频总时长连续循环三色直到最后 `0.5s` 黑屏。
 
 ## V3 best 模型推荐采集参数
 
@@ -62,14 +62,14 @@ green: 1376020
 red: 16716820
 ```
 
-推荐创建 session 的 API 请求。这里的 `total_seconds=3.0` 是默认推荐采集时长，可以按业务改成任意大于 `warmup_seconds + tail_seconds` 的时长。颜色顺序和时间参数被服务端固定校验为训练协议，不能改成其它颜色或 `restore_seconds=0.15`：
+推荐创建 session 的 API 请求。这里的 `total_seconds=4.0` 是默认推荐采集时长，可以按业务改成任意大于 `warmup_seconds + tail_seconds` 的时长。颜色顺序和时间参数被服务端固定校验为训练协议，不能改成其它颜色或 `restore_seconds=0.15`：
 
 ```bash
 curl -X POST "http://127.0.0.1:18132/api/sessions" \
   -H "Content-Type: application/json" \
   -d '{
     "color_indices": [1, 2, 3],
-    "total_seconds": 3.0,
+    "total_seconds": 4.0,
     "warmup_seconds": 1.0,
     "hold_seconds": 0.35,
     "restore_seconds": 0.0,
@@ -84,7 +84,7 @@ curl -X POST "http://127.0.0.1:18132/api/sessions" \
 
 ```text
 颜色序号: 1,2,3
-总时长秒: 3.0  # 推荐值，可调整
+总时长秒: 4.0  # 推荐值，可调整
 warmup 秒: 1.0
 hold 秒: 0.35
 restore 秒: 0.0
@@ -93,10 +93,10 @@ fps: 30
 宽/高: 1080x1920
 ```
 
-当 `total_seconds=3.0` 时，生成的刺激视频总时长为：
+当 `total_seconds=4.0` 时，生成的刺激视频总时长为：
 
 ```text
-3.0s = 1.0s black warmup + 1.5s continuous color loop + 0.5s black tail
+4.0s = 1.0s black warmup + 2.5s continuous color loop + 0.5s black tail
 ```
 
 ### 送入 V3 推理服务
@@ -219,7 +219,7 @@ http://127.0.0.1:18132/
 3. 点击 `开始录制`。
 4. 浏览器请求摄像头，全屏按训练 timeline 切色，同时录制现场视频；录制过程中右下角会显示实时摄像头画面。
 5. 录制结束后上传到服务端 session 目录。
-6. 上传完成后，`下载录制视频+TXT` 下载本次录制视频和同名 `recording_*.txt`。
+6. 上传完成后，`下载录制视频+TXT` 下载本次录制视频和同名 `recording_*.txt`；如果手机浏览器或自签名 HTTPS 场景忽略 `download` 属性，点击 `打开下载链接` 直接打开 zip 地址下载。
 
 对应下载 API：
 
@@ -242,7 +242,7 @@ curl -X POST "http://127.0.0.1:18132/api/sessions" \
   -H "Content-Type: application/json" \
   -d '{
     "color_indices": [1, 2, 3],
-    "total_seconds": 3.0,
+    "total_seconds": 4.0,
     "warmup_seconds": 1.0,
     "hold_seconds": 0.35,
     "restore_seconds": 0.0,

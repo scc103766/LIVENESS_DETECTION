@@ -29,7 +29,7 @@ from scripts.collect_flash_liveness_video import (  # noqa: E402
 
 
 DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "flash_collect_stimulus_api_service" / "outputs"
-RECOMMENDED_TOTAL_SECONDS = 3.0
+RECOMMENDED_TOTAL_SECONDS = 4.0
 TRAINING_COLOR_INDICES = [1, 2, 3]
 TRAINING_COLOR_SEQUENCE_RGB = COLOR_SEQUENCE_RGB
 TRAINING_WARMUP_SECONDS = 1.0
@@ -334,7 +334,7 @@ def render_home_page() -> str:
   <main>
     <section>
       <h2>刺激序列</h2>
-      <p class="hint">协议固定为 fixed_collect_protocol，录制总时长可按业务输入；默认 3.0s 只是推荐值。</p>
+      <p class="hint">协议固定为 fixed_collect_protocol，录制总时长可按业务输入；默认 4.0s 只是推荐值。</p>
       <div class="palette">
         <span class="swatch"><span class="dot" style="background: rgb(255,20,255)"></span>1</span>
         <span class="swatch"><span class="dot" style="background: rgb(20,255,20)"></span>2</span>
@@ -346,7 +346,7 @@ def render_home_page() -> str:
         <label>hold 秒<input id="hold" type="number" step="0.05" value="0.35" readonly></label>
         <label>restore 秒<input id="restore" type="number" step="0.05" value="0.0" readonly></label>
         <label>tail 秒<input id="tail" type="number" step="0.05" value="0.5" readonly></label>
-        <label>总时长秒<input id="total" type="number" step="0.05" value="3.0"></label>
+        <label>总时长秒<input id="total" type="number" step="0.05" value="4.0"></label>
         <label>fps<input id="fps" type="number" step="1" value="30"></label>
         <label>宽<input id="width" type="number" step="1" value="1080"></label>
         <label>高<input id="height" type="number" step="1" value="1920"></label>
@@ -358,6 +358,7 @@ def render_home_page() -> str:
         <button id="record-btn" type="button" class="secondary">开始录制</button>
         <button id="refresh-camera-btn" type="button" class="secondary">刷新摄像头</button>
         <a id="download-recording-link" class="button secondary" href="#" download style="display:none">下载录制视频+TXT</a>
+        <a id="open-recording-link" class="button secondary" href="#" target="_blank" rel="noopener" style="display:none">打开下载链接</a>
       </div>
     </section>
     <section>
@@ -386,7 +387,7 @@ def render_home_page() -> str:
     function sessionPayload() {
       return {
         color_indices: sequence(),
-        total_seconds: $("total").value.trim() ? Number($("total").value) : 3.0,
+        total_seconds: $("total").value.trim() ? Number($("total").value) : 4.0,
         warmup_seconds: Number($("warmup").value),
         hold_seconds: Number($("hold").value),
         restore_seconds: Number($("restore").value),
@@ -410,6 +411,7 @@ def render_home_page() -> str:
         if (!response.ok) throw new Error(data.detail || response.statusText);
         session = data;
         $("download-recording-link").style.display = "none";
+        $("open-recording-link").style.display = "none";
         show(data);
         return data;
       } finally {
@@ -652,8 +654,15 @@ def render_home_page() -> str:
         const data = await response.json();
         if (!response.ok) throw new Error(data.detail || response.statusText);
         if (data.recording_bundle_url) {
-          $("download-recording-link").href = data.recording_bundle_url;
+          const bundleUrl = new URL(data.recording_bundle_url, window.location.href).href;
+          const bundleStem = (data.recording_bundle_url.split("/").pop() || "recording.zip").replace(/\.zip$/, "");
+          const bundleName = `${data.session_id || currentSession.session_id}_${bundleStem}_video_txt.zip`;
+          $("download-recording-link").href = bundleUrl;
+          $("download-recording-link").setAttribute("download", bundleName);
           $("download-recording-link").style.display = "inline-flex";
+          $("open-recording-link").href = bundleUrl;
+          $("open-recording-link").style.display = "inline-flex";
+          data.recording_bundle_absolute_url = bundleUrl;
         }
         show(data);
       } catch (error) {
